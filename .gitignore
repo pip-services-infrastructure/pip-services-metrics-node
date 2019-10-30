@@ -1,0 +1,8 @@
+/node_modules
+/npm-debug.log
+/.idea
+/data/clusters.test.json
+/data/clusters.json
+/obj/test
+/docker/id_rsa*
+/.vscode
