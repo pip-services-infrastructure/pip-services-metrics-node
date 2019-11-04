@@ -44,7 +44,8 @@
         "pip-services3-aws-node": "^3.0.0",
         "pip-services3-rpc-node": "^3.0.0",
         "pip-services3-mongodb-node": "^3.0.0",
-        "pip-services3-seneca-node": "^3.0.0"
+        "pip-services3-seneca-node": "^3.0.0",
+        "typescript-map": "*"
     },
     "devDependencies": {
         "@types/async": "^2.0.0",
@@ -53,7 +54,7 @@
         "@types/mocha": "*",
         "@types/mongodb": "^2.1.38",
         "@types/mongoose": "^4.7.51",
-        "@types/node": "^12.12.3",
+        "@types/node": "^12.12.5",
         "chai": "*",
         "mocha": "*",
         "restify": "^4.3.0"

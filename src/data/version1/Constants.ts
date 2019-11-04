@@ -1,5 +1,5 @@
 
 export class MetricsConstants {
-        public static readonly MetricsController:string = "Enterprise.Metrics.MetricsController";
+        public static readonly MetricsController: string = "Enterprise.Metrics.MetricsController";
 }
 

@@ -1,6 +1,5 @@
 
-export enum TimeHorizonV1
-{
+export enum TimeHorizonV1 {
     Total = 0,
     Year = 1,
     Month = 2,
