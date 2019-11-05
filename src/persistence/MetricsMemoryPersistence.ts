@@ -99,13 +99,13 @@ export class MetricsMemoryPersistence extends IdentifiableMemoryPersistence<Metr
                 if (index < 0) {
                     item = new MetricRecordV1();
                     item.id = id,
-                        item.name = update.name,
-                        item.timeHorizon = timeHorizon,
-                        item.range = range,
-                        item.dimension1 = update.dimension1,
-                        item.dimension2 = update.dimension2,
-                        item.dimension3 = update.dimension3,
-                        item.values = new TSMap<string, MetricRecordValueV1>()
+                    item.name = update.name,
+                    item.timeHorizon = timeHorizon,
+                    item.range = range,
+                    item.dimension1 = update.dimension1,
+                    item.dimension2 = update.dimension2,
+                    item.dimension3 = update.dimension3,
+                    item.values = new TSMap<string, MetricRecordValueV1>()
 
                     this._items.set(item);
                 }
