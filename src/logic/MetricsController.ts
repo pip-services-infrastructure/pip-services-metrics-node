@@ -129,9 +129,6 @@ export class MetricsController
                     + "_" + record.dimension2
                     + "_" + record.dimension3;
 
-                    console.dir("MetricController:getMetricsByFilter:PageRecord:");
-                    console.dir(record);
-
                 // Get or create value set
                 let set: MetricValueSetV1;
                 set = sets.get(id);
@@ -143,7 +140,7 @@ export class MetricsController
                     set.dimension2 = record.dimension2;
                     set.dimension3 = record.dimension3;
                     set.values = new Array<MetricValueV1>()
-                    //sets.set(id, set);
+                    sets.set(id, set);
                 }
 
                 record.values.forEach((entry, key, index) => {
@@ -157,8 +154,7 @@ export class MetricsController
                     value.min = entry.min;
                     value.max = entry.max;
                     set.values.push(value);
-
-                    sets.set(id, set);
+                    
                 });
             });
             callback(err, new DataPage<MetricValueSetV1>(sets.values(), page.total));
