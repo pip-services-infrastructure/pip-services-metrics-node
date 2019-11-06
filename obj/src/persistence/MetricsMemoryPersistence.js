@@ -74,8 +74,8 @@ class MetricsMemoryPersistence extends pip_services3_data_node_1.IdentifiableMem
             if (timeHorizon <= maxTimeHorizon) {
                 let id = MetricRecordIdComposer_1.MetricRecordIdComposer.composeIdFromUpdate(timeHorizon, update);
                 let range = TimeRangeComposer_1.TimeRangeComposer.composeRangeFromUpdate(timeHorizon, update);
-                let index = this._items.findIndex((item) => {
-                    item.id == id;
+                let index = this._items.findIndex((val, index, arr) => {
+                    return val.id == id;
                 });
                 let timeIndex = TimeIndexComposer_1.TimeIndexComposer.composeIndexFromUpdate(timeHorizon, update);
                 if (index < 0) {
@@ -88,12 +88,12 @@ class MetricsMemoryPersistence extends pip_services3_data_node_1.IdentifiableMem
                     item.dimension2 = update.dimension2;
                     item.dimension3 = update.dimension3;
                     item.values = new typescript_map_1.TSMap();
-                    this._items.push(item);
+                    index = this._items.push(item) - 1;
                 }
                 else {
                     item = this._items[index];
                 }
-                let value = null;
+                let value;
                 if (!item.values.has(timeIndex)) {
                     value = new version1_1.MetricRecordValueV1();
                     value.count = 0;
@@ -102,11 +102,15 @@ class MetricsMemoryPersistence extends pip_services3_data_node_1.IdentifiableMem
                     value.max = update.value;
                     //item.values.set(timeIndex, value);
                 }
+                else {
+                    value = item.values.get(timeIndex);
+                }
                 value.count += 1;
                 value.sum += update.value;
                 value.min = Math.min(value.min, update.value);
                 value.max = Math.max(value.max, update.value);
                 item.values.set(timeIndex, value);
+                this._items[index] = item;
             }
         });
         this._logger.trace(correlationId, 'Updated metric');

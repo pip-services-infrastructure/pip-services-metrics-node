@@ -6,7 +6,7 @@ const MetricsMemoryPersistence_1 = require("../persistence/MetricsMemoryPersiste
 const MetricsFilePersistence_1 = require("../persistence/MetricsFilePersistence");
 const MetricsMongoDbPersistence_1 = require("../persistence/MetricsMongoDbPersistence");
 const MetricsController_1 = require("../logic/MetricsController");
-const MetricsHttpServiceV1_1 = require("../service/version1/MetricsHttpServiceV1");
+const MetricsHttpServiceV1_1 = require("../services/version1/MetricsHttpServiceV1");
 class MetricsServiceFactory extends pip_services3_components_node_1.Factory {
     constructor() {
         super();

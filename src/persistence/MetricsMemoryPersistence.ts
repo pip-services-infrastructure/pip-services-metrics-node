@@ -32,7 +32,7 @@ export class MetricsMemoryPersistence
 
     protected _maxPageSize: number = 1000;
 
-    constructor();
+    constructor()
     constructor(loader: ILoader<MetricRecordV1>, saver: ISaver<MetricRecordV1>)
     constructor(loader?: ILoader<MetricRecordV1>, saver?: ISaver<MetricRecordV1>) {
         super(loader, saver);
@@ -92,8 +92,8 @@ export class MetricsMemoryPersistence
             if (timeHorizon <= maxTimeHorizon) {
                 let id = MetricRecordIdComposer.composeIdFromUpdate(timeHorizon, update);
                 let range = TimeRangeComposer.composeRangeFromUpdate(timeHorizon, update);
-                let index = this._items.findIndex((item) => {
-                    item.id == id;
+                let index = this._items.findIndex((val, index, arr) => {
+                    return val.id == id;
                 });
 
                 let timeIndex = TimeIndexComposer.composeIndexFromUpdate(timeHorizon, update);
@@ -109,13 +109,12 @@ export class MetricsMemoryPersistence
                     item.dimension3 = update.dimension3;
                     item.values = new TSMap<string, MetricRecordValueV1>()
 
-                    this._items.push(item);
-                }
-                else {
+                    index = this._items.push(item) - 1;
+                } else {
                     item = this._items[index];
                 }
 
-                let value: MetricRecordValueV1 = null;
+                let value: MetricRecordValueV1;
                 if (!item.values.has(timeIndex)) {
                     value = new MetricRecordValueV1();
 
@@ -125,6 +124,8 @@ export class MetricsMemoryPersistence
                     value.max = update.value;
 
                     //item.values.set(timeIndex, value);
+                } else {
+                    value = item.values.get(timeIndex);
                 }
 
                 value.count += 1;
@@ -133,6 +134,7 @@ export class MetricsMemoryPersistence
                 value.max = Math.max(value.max, update.value);
                 
                 item.values.set(timeIndex, value);
+                this._items[index] = item;
             }
         })
         this._logger.trace(correlationId, 'Updated metric');

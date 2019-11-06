@@ -5,7 +5,7 @@ import { MetricsMemoryPersistence } from '../persistence/MetricsMemoryPersistenc
 import { MetricsFilePersistence } from '../persistence/MetricsFilePersistence';
 import { MetricsMongoDbPersistence } from '../persistence/MetricsMongoDbPersistence';
 import { MetricsController } from '../logic/MetricsController';
-import { MetricsHttpServiceV1 } from '../service/version1/MetricsHttpServiceV1';
+import { MetricsHttpServiceV1 } from '../services/version1/MetricsHttpServiceV1';
 
     export class MetricsServiceFactory extends Factory
     {

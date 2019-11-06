@@ -10,7 +10,7 @@ class MetricUpdateV1Schema extends pip_services3_commons_node_1.ObjectSchema {
         this.withRequiredProperty("month", pip_services3_commons_node_2.TypeCode.Integer);
         this.withRequiredProperty("day", pip_services3_commons_node_2.TypeCode.Integer);
         this.withRequiredProperty("hour", pip_services3_commons_node_2.TypeCode.Integer);
-        this.withRequiredProperty("minute", pip_services3_commons_node_2.TypeCode.Integer);
+        this.withOptionalProperty("minute", pip_services3_commons_node_2.TypeCode.Integer);
         this.withOptionalProperty("dimension1", pip_services3_commons_node_2.TypeCode.String);
         this.withOptionalProperty("dimension2", pip_services3_commons_node_2.TypeCode.String);
         this.withOptionalProperty("dimension3", pip_services3_commons_node_2.TypeCode.String);

@@ -34,28 +34,27 @@ class MetricsCommandSet extends pip_services3_commons_node_1.CommandSet {
         });
     }
     makeGetMetricsByFilterCommand() {
-        return new pip_services3_commons_node_2.Command("get_metrics_by_filter", new pip_services3_commons_node_3.ObjectSchema()
+        return new pip_services3_commons_node_2.Command("get_metrics_by_filter", new pip_services3_commons_node_3.ObjectSchema(true)
             .withOptionalProperty("filter", new pip_services3_commons_node_4.FilterParamsSchema())
             .withOptionalProperty("paging", new pip_services3_commons_node_5.PagingParamsSchema()), (correlationId, args, callback) => {
-            var filter = pip_services3_commons_node_6.FilterParams.fromValue(args.get("filter"));
-            var paging = pip_services3_commons_node_7.PagingParams.fromValue(args.get("paging"));
-            return this._controller.getMetricsByFilter(correlationId, filter, paging, callback);
+            let filter = pip_services3_commons_node_6.FilterParams.fromValue(args.get("filter"));
+            let paging = pip_services3_commons_node_7.PagingParams.fromValue(args.get("paging"));
+            this._controller.getMetricsByFilter(correlationId, filter, paging, callback);
         });
     }
     makeUpdateMetricCommand() {
-        return new pip_services3_commons_node_2.Command("update_metric", new pip_services3_commons_node_3.ObjectSchema()
+        return new pip_services3_commons_node_2.Command("update_metric", new pip_services3_commons_node_3.ObjectSchema(true)
             .withRequiredProperty("update", new MetricUpdateV1Schema_1.MetricUpdateV1Schema())
-            .withOptionalProperty("max_time_horizon", pip_services3_commons_node_8.TypeCode.Long), (correlationId, args) => {
+            .withOptionalProperty("max_time_horizon", pip_services3_commons_node_8.TypeCode.Long), (correlationId, args, callback) => {
             var update = args.getAsObject("update");
             var maxTimeHorizon = args.getAsIntegerWithDefault("max_time_horizon", TimeHorizonV1_1.TimeHorizonV1.Hour);
             this._controller.updateMetric(correlationId, update, maxTimeHorizon);
-            return null;
         });
     }
     makeUpdateMetricsCommand() {
-        return new pip_services3_commons_node_2.Command("update_metrics", new pip_services3_commons_node_3.ObjectSchema()
+        return new pip_services3_commons_node_2.Command("update_metrics", new pip_services3_commons_node_3.ObjectSchema(true)
             .withRequiredProperty("updates", new pip_services3_commons_node_9.ArraySchema(new MetricUpdateV1Schema_1.MetricUpdateV1Schema()))
-            .withOptionalProperty("max_time_horizon", pip_services3_commons_node_8.TypeCode.Long), (correlationId, args) => {
+            .withOptionalProperty("max_time_horizon", pip_services3_commons_node_8.TypeCode.Long), (correlationId, args, callback) => {
             var updates = args.getAsArray("updates");
             var maxTimeHorizon = args.getAsIntegerWithDefault("max_time_horizon", TimeHorizonV1_1.TimeHorizonV1.Hour);
             this._controller.updateMetrics(correlationId, updates, maxTimeHorizon);

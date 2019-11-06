@@ -100,7 +100,7 @@ export class MetricsMongoDbPersistence
     }
 
     public set(correlationId: string, item: MetricRecordV1, callback?: (err: any, item: MetricRecordV1) => void) {
-        
+
         if (item == null) {
             if (callback) callback(null, null);
             return;
@@ -119,11 +119,12 @@ export class MetricsMongoDbPersistence
             returnOriginal: false,
             upsert: true
         };
-        
-        this._collection.findOneAndUpdate(filter, {$set:newItem}, options, (err, result) => {
+
+        //this._collection.findOneAndUpdate(filter, {$set:newItem}, options, (err, result) => {
+        this._collection.findOneAndReplace(filter, newItem, options, (err, result) => {
             if (!err)
                 this._logger.trace(correlationId, "Set in %s with id = %s", this._collection, item.id);
-           
+
             if (callback) {
                 newItem = result ? this.convertToPublic(result.value) : null;
                 callback(err, newItem);

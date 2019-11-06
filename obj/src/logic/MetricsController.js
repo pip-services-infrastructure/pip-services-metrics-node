@@ -26,7 +26,7 @@ class MetricsController {
         this._persistence = references.getOneRequired(new pip_services3_commons_node_3.Descriptor('metrics', 'persistence', '*', '*', '1.0'));
     }
     configure(config) {
-        this._dependencyResolver.configure(config);
+        //this._dependencyResolver.configure(config);
     }
     getCommandSet() {
         if (this._commandSet == null) {
@@ -36,31 +36,45 @@ class MetricsController {
     }
     getMetricDefinitionsName(correlationId, name, callback) {
         var filter = pip_services3_commons_node_4.FilterParams.fromTuples("name", name, "time_horizon", 0);
-        var take = 500;
-        var paging = new pip_services3_commons_node_5.PagingParams(0, take);
-        var definitions = new typescript_map_1.TSMap();
-        this._persistence.getPageByFilter(correlationId, filter, paging, (err, page) => {
-            let definition;
-            page.data.forEach((record, index, arr) => {
-                definition = definitions.get(record.name);
-                if (util_1.isUndefined(definition)) {
-                    definition = new version1_2.MetricDefinitionV1();
-                    definition.name = record.name;
-                    definition.dimension1 = new Array();
-                    definition.dimension2 = new Array();
-                    definition.dimension3 = new Array();
+        let take = 500;
+        let paging = new pip_services3_commons_node_5.PagingParams(0, take);
+        let error = null;
+        let count;
+        let definitions = new typescript_map_1.TSMap();
+        while (true) {
+            this._persistence.getPageByFilter(correlationId, filter, paging, (err, page) => {
+                let definition;
+                count = page.data.length;
+                page.data.forEach((record, index, arr) => {
+                    definition = definitions.get(record.name);
+                    if (util_1.isUndefined(definition)) {
+                        definition = new version1_2.MetricDefinitionV1();
+                        definition.name = record.name;
+                        definition.dimension1 = new Array();
+                        definition.dimension2 = new Array();
+                        definition.dimension3 = new Array();
+                    }
+                    if (record.dimension1 != null && !(definition.dimension1.indexOf(record.dimension1) >= 0)) {
+                        definition.dimension1.push(record.dimension1);
+                    }
+                    if (record.dimension2 != null && !(definition.dimension2.indexOf(record.dimension2) >= 0)) {
+                        definition.dimension2.push(record.dimension2);
+                    }
+                    if (record.dimension3 != null && !(definition.dimension3.indexOf(record.dimension3) >= 0)) {
+                        definition.dimension3.push(record.dimension3);
+                    }
                     definitions.set(record.name, definition);
-                }
-                if (record.dimension1 != null && !(definition.dimension1.indexOf(record.dimension1) > 0))
-                    definition.dimension1.push(record.dimension1);
-                if (record.dimension2 != null && !(definition.dimension2.indexOf(record.dimension2) > 0))
-                    definition.dimension2.push(record.dimension2);
-                if (record.dimension3 != null && !(definition.dimension3.indexOf(record.dimension3) > 0))
-                    definition.dimension3.push(record.dimension3);
-                //definitions.set(record.name, definition);
+                });
+                error = err;
             });
-            callback(err, definitions.values());
-        });
+            if (error)
+                break;
+            if (count > 0)
+                paging.skip += take;
+            else
+                break;
+        }
+        callback(error, definitions.values());
     }
     getMetricDefinitions(correlationId, callback) {
         return this.getMetricDefinitionsName(correlationId, null, callback);
@@ -88,8 +102,6 @@ class MetricsController {
                 let id = record.name + "_" + record.dimension1
                     + "_" + record.dimension2
                     + "_" + record.dimension3;
-                console.dir("MetricController:getMetricsByFilter:PageRecord:");
-                console.dir(record);
                 // Get or create value set
                 let set;
                 set = sets.get(id);
@@ -101,7 +113,7 @@ class MetricsController {
                     set.dimension2 = record.dimension2;
                     set.dimension3 = record.dimension3;
                     set.values = new Array();
-                    //sets.set(id, set);
+                    sets.set(id, set);
                 }
                 record.values.forEach((entry, key, index) => {
                     if (key.localeCompare(fromIndex) < 0 || key.localeCompare(toIndex) > 0)
@@ -113,7 +125,6 @@ class MetricsController {
                     value.min = entry.min;
                     value.max = entry.max;
                     set.values.push(value);
-                    sets.set(id, set);
                 });
             });
             callback(err, new pip_services3_commons_node_6.DataPage(sets.values(), page.total));

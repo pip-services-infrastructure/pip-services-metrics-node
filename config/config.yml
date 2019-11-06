@@ -1,10 +1,10 @@
 ---
 # Console logger
-- descriptor: "pip-services3:logger:console:default:1.0"
+- descriptor: "pip-services:logger:console:default:1.0"
   level: {{LOG_LEVEL}}{{^LOG_LEVEL}}info{{/LOG_LEVEL}}
 
 # Performance counters that posts values to log
-- descriptor: "pip-services3:counters:log:default:1.0"
+- descriptor: "pip-services:counters:log:default:1.0"
   level: {{LOG_LEVEL}}{{^LOG_LEVEL}}info{{/LOG_LEVEL}}
 
 {{#if ELASTICSEARCH_LOGGER_ENABLED}}
@@ -16,20 +16,20 @@
 {{/if}}
 
 # AppInsights logger version 1.0
-- descriptor: "pip-services3:logger:app-insights:default:1.0"
-  level: {{LOG_LEVEL}}{{^LOG_LEVEL}}info{{/LOG_LEVEL}}
-  credential:
-    access_key: {{APP_INSIGHTS_INSTRUMENTATION_KEY}}
+#- descriptor: "pip-services:logger:app-insights:default:1.0"
+#  level: {{LOG_LEVEL}}{{^LOG_LEVEL}}info{{/LOG_LEVEL}}
+#  credential:
+#    access_key: {{APP_INSIGHTS_INSTRUMENTATION_KEY}}
 
   {{#if PROMETHEUS_ENABLED}}
 # Prometheus counters vesion 1.0
-- descriptor: "pip-services3:counters:prometheus:default:1.0"
+- descriptor: "pip-services:counters:prometheus:default:1.0"
   level: {{LOG_LEVEL}}{{^LOG_LEVEL}}info{{/LOG_LEVEL}}
   interval: {{PROMETHEUS_INTERVAL}}{{^PROMETHEUS_INTERVAL}}30000{{/PROMETHEUS_INTERVAL}}
   push_enabled: {{PROMETHEUS_PUSH_ENABLED}}{{^PROMETHEUS_PUSH_ENABLED}}false{{/PROMETHEUS_PUSH_ENABLED}}
 
 # Prometheus metrics service version 1.0
-- descriptor: "pip-services3:metrics-service:prometheus:default:1.0"
+- descriptor: "pip-services:metrics-service:prometheus:default:1.0"
   connection:
     protocol: "http"
     host: {{PROMETHEUS_SERVICE_HOST}}{{^PROMETHEUS_SERVICE_HOST}}0.0.0.0{{/PROMETHEUS_SERVICE_HOST}}
@@ -67,14 +67,14 @@
 - descriptor: "metrics:service:http:default:1.0"
 
 # HTTP endpoint version 1.0
-- descriptor: "pip-services3:endpoint:http:default:1.0"
+- descriptor: "pip-services:endpoint:http:default:1.0"
   connection:
     protocol: "http"
     host: "0.0.0.0"
     port: 8080
 
  # Default Status
-- descriptor: "pip-services3:status-service:http:default:1.0"
+- descriptor: "pip-services:status-service:http:default:1.0"
 
 # Default Heartbeat
-- descriptor: "pip-services3:heartbeat-service:http:default:1.0"
+- descriptor: "pip-services:heartbeat-service:http:default:1.0"

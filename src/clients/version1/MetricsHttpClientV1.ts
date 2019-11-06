@@ -22,7 +22,8 @@ import { DataPage } from 'pip-services3-commons-node';
             this.callCommand(
                 "get_metric_definitions",
                 correlationId,
-                {}, callback
+                {}, 
+                callback
             );
         }
 

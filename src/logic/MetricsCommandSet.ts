@@ -35,7 +35,7 @@ export class MetricsCommandSet extends CommandSet {
         return new Command(
             "get_metric_definitions",
             new ObjectSchema(),
-            (correlationId: string, args: Parameters, callback: (err: any, items: MetricDefinitionV1[]) => void) => {
+            (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
                 this._controller.getMetricDefinitions(correlationId, callback);
             });
     }
@@ -45,7 +45,7 @@ export class MetricsCommandSet extends CommandSet {
             "get_metric_definition_by_name",
             new ObjectSchema()
                 .withOptionalProperty("name", TypeCode.String),
-            (correlationId: string, args: Parameters, callback: (err: any, item: MetricDefinitionV1) => void) => {
+            (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
                 let name = args.getAsString("name");
                 this._controller.getMetricDefinitionByName(correlationId, name, callback);
             });
@@ -54,37 +54,36 @@ export class MetricsCommandSet extends CommandSet {
     private makeGetMetricsByFilterCommand(): ICommand {
         return new Command(
             "get_metrics_by_filter",
-            new ObjectSchema()
+            new ObjectSchema(true)
                 .withOptionalProperty("filter", new FilterParamsSchema())
                 .withOptionalProperty("paging", new PagingParamsSchema()),
-            (correlationId: string, args: Parameters, callback: (err: any, page: DataPage<MetricValueSetV1>) => void) => {
-                var filter = FilterParams.fromValue(args.get("filter"));
-                var paging = PagingParams.fromValue(args.get("paging"));
-                return this._controller.getMetricsByFilter(correlationId, filter, paging, callback);
+            (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
+                let filter = FilterParams.fromValue(args.get("filter"));
+                let paging = PagingParams.fromValue(args.get("paging"));
+                this._controller.getMetricsByFilter(correlationId, filter, paging, callback);
             });
     }
 
     private makeUpdateMetricCommand(): ICommand {
         return new Command(
             "update_metric",
-            new ObjectSchema()
+            new ObjectSchema(true)
                 .withRequiredProperty("update", new MetricUpdateV1Schema())
                 .withOptionalProperty("max_time_horizon", TypeCode.Long),
-            (correlationId: string, args: Parameters) => {
+            (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
                 var update = args.getAsObject("update");
                 var maxTimeHorizon = args.getAsIntegerWithDefault("max_time_horizon", TimeHorizonV1.Hour);
                 this._controller.updateMetric(correlationId, update, maxTimeHorizon);
-                return null;
             });
     }
 
     private makeUpdateMetricsCommand(): ICommand {
         return new Command(
             "update_metrics",
-            new ObjectSchema()
+            new ObjectSchema(true)
                 .withRequiredProperty("updates", new ArraySchema(new MetricUpdateV1Schema()))
                 .withOptionalProperty("max_time_horizon", TypeCode.Long),
-            (correlationId: string, args: Parameters) => {
+            (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
                 var updates = args.getAsArray("updates");
                 var maxTimeHorizon = args.getAsIntegerWithDefault("max_time_horizon", TimeHorizonV1.Hour);
                 this._controller.updateMetrics(correlationId, updates, maxTimeHorizon);

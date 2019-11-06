@@ -2,45 +2,24 @@ let _ = require('lodash');
 let async = require('async');
 let assert = require('chai').assert;
 
-import { ConfigParams } from 'pip-services3-commons-node';
-import { Descriptor } from 'pip-services3-commons-node';
-import { References } from 'pip-services3-commons-node';
 import { FilterParams } from 'pip-services3-commons-node';
 import { PagingParams } from 'pip-services3-commons-node';
-import { MetricsMemoryPersistence } from '../../src/persistence/MetricsMemoryPersistence';
-import { MetricsController } from '../../src/logic/MetricsController';
-import { MetricUpdateV1 } from '../../src/data/version1/MetricUpdateV1';
-import { TimeHorizonV1 } from '../../src/data/version1/TimeHorizonV1';
-import { MetricValueSetV1 } from '../../src/data/version1/MetricValueSetV1';
-import { MetricDefinitionV1 } from '../../src/data/version1/MetricDefinitionV1';
+import { IMetricsClientV1 } from '../../../src/clients/version1/IMetricsClientV1'
+import { MetricUpdateV1 } from '../../../src/data/version1/MetricUpdateV1';
+import { TimeHorizonV1 } from '../../../src/data/version1/TimeHorizonV1';
+import { MetricValueSetV1 } from '../../../src/data/version1/MetricValueSetV1';
+import { MetricDefinitionV1 } from '../../../src/data/version1/MetricDefinitionV1';
 
-suite('MetricsControllerTest', () => {
-    let persistence: MetricsMemoryPersistence;
-    let controller: MetricsController;
+export class MetricsClientV1Fixture {
+    private _client: IMetricsClientV1;
 
-    setup((done) => {
-        persistence = new MetricsMemoryPersistence();
-        persistence.configure(new ConfigParams());
+    public constructor(client: IMetricsClientV1) {
+        assert.isNotNull(client);
+        this._client = client;
+    }
 
-        controller = new MetricsController();
-        controller.configure(new ConfigParams());
-
-        let references = References.fromTuples(
-            new Descriptor('metrics', 'persistence', 'memory', 'default', '1.0'), persistence,
-            new Descriptor('metrics', 'controller', 'default', 'default', '1.0'), controller
-        );
-
-        controller.setReferences(references);
-
-        persistence.open(null, done);
-    });
-
-    teardown((done) => {
-        persistence.close(null, done);
-    });
-
-    test('TestMetrics', (done) => {
-
+    public testMetrics(done) {
+        
         async.series([
             // Update metric once
             (callback) => {
@@ -55,7 +34,7 @@ suite('MetricsControllerTest', () => {
                 metric1.day = 26;
                 metric1.hour = 12;
                 metric1.value = 123;
-                controller.updateMetric(null, metric1, TimeHorizonV1.Hour);
+                this._client.updateMetric(null, metric1, TimeHorizonV1.Hour);
 
                 // Update metric second time
                 let metric2 = new MetricUpdateV1();
@@ -72,12 +51,12 @@ suite('MetricsControllerTest', () => {
 
                 let metricsUpdate = new Array<MetricUpdateV1>();
                 metricsUpdate.push(metric2);
-                controller.updateMetrics(null, metricsUpdate, TimeHorizonV1.Hour);
+                this._client.updateMetrics(null, metricsUpdate, TimeHorizonV1.Hour);
                 callback();
             },
             (callback) => {
                 // Get total metric
-                controller.getMetricsByFilter(null,
+                this._client.getMetricsByFilter(null,
                     FilterParams.fromTuples("name", "metric1"),
                     new PagingParams(), (err, page) => {
 
@@ -103,7 +82,7 @@ suite('MetricsControllerTest', () => {
             (callback) => {
                 // Get hour metric
                 let set: MetricValueSetV1;
-                controller.getMetricsByFilter(
+                this._client.getMetricsByFilter(
                     null,
                     FilterParams.fromTuples(
                         "name", "metric1",
@@ -151,10 +130,9 @@ suite('MetricsControllerTest', () => {
             }
 
         ], done);
-    });
+    }
 
-    test('TestDefinitions', (done) => {
-
+    public testDefinitions(done) {
         async.series([
             // Update metric once
             (callback) => {
@@ -186,12 +164,12 @@ suite('MetricsControllerTest', () => {
                 updateMetrics.push(metric1, metric2);
         
                 // Update metric second time
-                 controller.updateMetrics(null, updateMetrics, TimeHorizonV1.Hour);
+                 this._client.updateMetrics(null, updateMetrics, TimeHorizonV1.Hour);
                 callback();
             },
             (callback) => {
                 // Get all definitions
-                 controller.getMetricDefinitions(null, (err, definitions) => {
+                 this._client.getMetricDefinitions(null, (err, definitions) => {
                     assert.equal(1, definitions.length);
                     var definition:MetricDefinitionV1;
                     definition = definitions[0];
@@ -208,7 +186,7 @@ suite('MetricsControllerTest', () => {
             },
             (callback) => {
                 // Get a single definition
-                 controller.getMetricDefinitionByName(null, "metric2", (err, definition)=>{
+                 this._client.getMetricDefinitionByName(null, "metric2", (err, definition)=>{
                     assert.equal("metric2", definition.name);
                     callback(err);
                 });
@@ -216,6 +194,6 @@ suite('MetricsControllerTest', () => {
             }
 
         ], done);
-    });
+    }
+}
 
-});

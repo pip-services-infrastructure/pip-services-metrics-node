@@ -1,4 +1,4 @@
-let BeaconsProcess = require('../obj/src/container/MetricsProcess').MetricsProcess;
+let MetricsProcess = require('../obj/src/container/MetricsProcess').MetricsProcess;
 
 try {
     let proc = new MetricsProcess();

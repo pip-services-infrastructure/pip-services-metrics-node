@@ -9,7 +9,7 @@ export class MetricUpdateV1Schema extends ObjectSchema {
         this.withRequiredProperty("month", TypeCode.Integer);
         this.withRequiredProperty("day", TypeCode.Integer);
         this.withRequiredProperty("hour", TypeCode.Integer);
-        this.withRequiredProperty("minute", TypeCode.Integer);
+        this.withOptionalProperty("minute", TypeCode.Integer);
         this.withOptionalProperty("dimension1", TypeCode.String);
         this.withOptionalProperty("dimension2", TypeCode.String);
         this.withOptionalProperty("dimension3", TypeCode.String);
