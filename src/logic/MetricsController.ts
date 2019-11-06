@@ -71,15 +71,15 @@ export class MetricsController
 
         this._persistence.getPageByFilter(correlationId, filter, paging, (err, page) => {
             let definition: MetricDefinitionV1;
-            page.data.forEach(function (record, index, arr) {
+            page.data.forEach( (record, index, arr)=> {
                 definition = definitions.get(record.name);
                 if (isUndefined(definition)) {
                     definition = new MetricDefinitionV1();
-                    definition.name = record.name,
-                        definition.dimension1 = new Array<string>(),
-                        definition.dimension2 = new Array<string>(),
-                        definition.dimension3 = new Array<string>()
-                    definitions[record.name] = definition;
+                    definition.name = record.name;
+                    definition.dimension1 = new Array<string>();
+                    definition.dimension2 = new Array<string>();
+                    definition.dimension3 = new Array<string>();
+                    definitions.set(record.name, definition);
                 }
 
                 if (record.dimension1 != null && !(definition.dimension1.indexOf(record.dimension1) > 0))
@@ -88,7 +88,9 @@ export class MetricsController
                     definition.dimension2.push(record.dimension2);
                 if (record.dimension3 != null && !(definition.dimension3.indexOf(record.dimension3) > 0))
                     definition.dimension3.push(record.dimension3);
-            })
+                //definitions.set(record.name, definition);
+            });
+
             callback(err, definitions.values());
         });
     }
@@ -116,45 +118,47 @@ export class MetricsController
         var timeHorizon = TimeHorizonConverter.fromString(filter.getAsNullableString("time_horizon"));
         var fromIndex = TimeIndexComposer.composeFromIndexFromFilter(timeHorizon, filter);
         var toIndex = TimeIndexComposer.composeToIndexFromFilter(timeHorizon, filter);
+        // Convert records into value sets
+        let sets = new TSMap<string, MetricValueSetV1>();
 
         this._persistence.getPageByFilter(correlationId, filter, paging, (err, page) => {
 
-            // Convert records into value sets
-            let sets = new TSMap<string, MetricValueSetV1>();
-            page.data.forEach(function (record, index, arr) {
+            page.data.forEach((record, index, arr) => {
                 // Generate index
                 let id = record.name + "_" + record.dimension1
                     + "_" + record.dimension2
                     + "_" + record.dimension3;
 
+                    console.dir("MetricController:getMetricsByFilter:PageRecord:");
+                    console.dir(record);
+
                 // Get or create value set
                 let set: MetricValueSetV1;
                 set = sets.get(id);
-                if (!isUndefined(set)) {
+                if (isUndefined(set)) {
                     set = new MetricValueSetV1();
                     set.name = record.name;
-                    set.timeHorizon = record.timeHorizon,
-                        set.dimension1 = record.dimension1,
-                        set.dimension2 = record.dimension2,
-                        set.dimension3 = record.dimension3,
-                        set.values = new Array<MetricValueV1>()
-                    sets[id] = set;
+                    set.timeHorizon = record.timeHorizon;
+                    set.dimension1 = record.dimension1;
+                    set.dimension2 = record.dimension2;
+                    set.dimension3 = record.dimension3;
+                    set.values = new Array<MetricValueV1>()
+                    //sets.set(id, set);
                 }
 
-                record.values.forEach(function (entry, key, arr) {
+                record.values.forEach((entry, key, index) => {
                     if (key.localeCompare(fromIndex) < 0 || key.localeCompare(toIndex) > 0)
-                       return;
+                        return;
 
                     var value = new MetricValueV1();
-
                     TimeParser.parseTime(key, timeHorizon, value);
-
                     value.count = entry.count;
                     value.sum = entry.sum;
                     value.min = entry.min;
                     value.max = entry.max;
-
                     set.values.push(value);
+
+                    sets.set(id, set);
                 });
             });
             callback(err, new DataPage<MetricValueSetV1>(sets.values(), page.total));

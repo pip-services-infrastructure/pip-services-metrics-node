@@ -8,19 +8,19 @@ class TimeParser {
             return;
         }
         if (token.length >= 4) {
-            value.year = pip_services3_commons_node_1.IntegerConverter.toInteger(token.substring(0, 4));
+            value.year = pip_services3_commons_node_1.IntegerConverter.toInteger(token.substr(0, 4));
         }
         if (token.length >= 6) {
-            value.month = pip_services3_commons_node_1.IntegerConverter.toInteger(token.substring(4, 2));
+            value.month = pip_services3_commons_node_1.IntegerConverter.toInteger(token.substr(4, 2));
         }
         if (token.length >= 8) {
-            value.day = pip_services3_commons_node_1.IntegerConverter.toInteger(token.substring(6, 2));
+            value.day = pip_services3_commons_node_1.IntegerConverter.toInteger(token.substr(6, 2));
         }
         if (token.length >= 10) {
-            value.hour = pip_services3_commons_node_1.IntegerConverter.toInteger(token.substring(8, 2));
+            value.hour = pip_services3_commons_node_1.IntegerConverter.toInteger(token.substr(8, 2));
         }
         if (token.length >= 12) {
-            value.minute = pip_services3_commons_node_1.IntegerConverter.toInteger(token.substring(10, 2));
+            value.minute = pip_services3_commons_node_1.IntegerConverter.toInteger(token.substr(10, 2));
         }
     }
 }

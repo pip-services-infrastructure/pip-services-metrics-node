@@ -41,15 +41,15 @@ class MetricsController {
         var definitions = new typescript_map_1.TSMap();
         this._persistence.getPageByFilter(correlationId, filter, paging, (err, page) => {
             let definition;
-            page.data.forEach(function (record, index, arr) {
+            page.data.forEach((record, index, arr) => {
                 definition = definitions.get(record.name);
                 if (util_1.isUndefined(definition)) {
                     definition = new version1_2.MetricDefinitionV1();
-                    definition.name = record.name,
-                        definition.dimension1 = new Array(),
-                        definition.dimension2 = new Array(),
-                        definition.dimension3 = new Array();
-                    definitions[record.name] = definition;
+                    definition.name = record.name;
+                    definition.dimension1 = new Array();
+                    definition.dimension2 = new Array();
+                    definition.dimension3 = new Array();
+                    definitions.set(record.name, definition);
                 }
                 if (record.dimension1 != null && !(definition.dimension1.indexOf(record.dimension1) > 0))
                     definition.dimension1.push(record.dimension1);
@@ -57,6 +57,7 @@ class MetricsController {
                     definition.dimension2.push(record.dimension2);
                 if (record.dimension3 != null && !(definition.dimension3.indexOf(record.dimension3) > 0))
                     definition.dimension3.push(record.dimension3);
+                //definitions.set(record.name, definition);
             });
             callback(err, definitions.values());
         });
@@ -79,28 +80,30 @@ class MetricsController {
         var timeHorizon = persistence_1.TimeHorizonConverter.fromString(filter.getAsNullableString("time_horizon"));
         var fromIndex = persistence_2.TimeIndexComposer.composeFromIndexFromFilter(timeHorizon, filter);
         var toIndex = persistence_2.TimeIndexComposer.composeToIndexFromFilter(timeHorizon, filter);
+        // Convert records into value sets
+        let sets = new typescript_map_1.TSMap();
         this._persistence.getPageByFilter(correlationId, filter, paging, (err, page) => {
-            // Convert records into value sets
-            let sets = new typescript_map_1.TSMap();
-            page.data.forEach(function (record, index, arr) {
+            page.data.forEach((record, index, arr) => {
                 // Generate index
                 let id = record.name + "_" + record.dimension1
                     + "_" + record.dimension2
                     + "_" + record.dimension3;
+                console.dir("MetricController:getMetricsByFilter:PageRecord:");
+                console.dir(record);
                 // Get or create value set
                 let set;
                 set = sets.get(id);
-                if (!util_1.isUndefined(set)) {
+                if (util_1.isUndefined(set)) {
                     set = new MetricValueSetV1_1.MetricValueSetV1();
                     set.name = record.name;
-                    set.timeHorizon = record.timeHorizon,
-                        set.dimension1 = record.dimension1,
-                        set.dimension2 = record.dimension2,
-                        set.dimension3 = record.dimension3,
-                        set.values = new Array();
-                    sets[id] = set;
+                    set.timeHorizon = record.timeHorizon;
+                    set.dimension1 = record.dimension1;
+                    set.dimension2 = record.dimension2;
+                    set.dimension3 = record.dimension3;
+                    set.values = new Array();
+                    //sets.set(id, set);
                 }
-                record.values.forEach(function (entry, key, arr) {
+                record.values.forEach((entry, key, index) => {
                     if (key.localeCompare(fromIndex) < 0 || key.localeCompare(toIndex) > 0)
                         return;
                     var value = new MetricValueV1_1.MetricValueV1();
@@ -110,6 +113,7 @@ class MetricsController {
                     value.min = entry.min;
                     value.max = entry.max;
                     set.values.push(value);
+                    sets.set(id, set);
                 });
             });
             callback(err, new pip_services3_commons_node_6.DataPage(sets.values(), page.total));

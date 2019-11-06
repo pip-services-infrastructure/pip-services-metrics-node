@@ -69,27 +69,26 @@ class MetricsMemoryPersistence extends pip_services3_data_node_1.IdentifiableMem
         super.getPageByFilter(correlationId, this.composeFilter(filterParams), paging, null, null, callback);
     }
     updateOne(correlationId, update, maxTimeHorizon) {
-        this.TimeHorizons.forEach(function (timeHorizon) {
+        let item;
+        this.TimeHorizons.forEach((timeHorizon) => {
             if (timeHorizon <= maxTimeHorizon) {
                 let id = MetricRecordIdComposer_1.MetricRecordIdComposer.composeIdFromUpdate(timeHorizon, update);
                 let range = TimeRangeComposer_1.TimeRangeComposer.composeRangeFromUpdate(timeHorizon, update);
-                let existItem = this._items.filter(function (elem, index, arr) {
-                    elem.id == id;
+                let index = this._items.findIndex((item) => {
+                    item.id == id;
                 });
-                let index = existItem.id || -1;
                 let timeIndex = TimeIndexComposer_1.TimeIndexComposer.composeIndexFromUpdate(timeHorizon, update);
-                let item;
                 if (index < 0) {
                     item = new MetricRecordV1_1.MetricRecordV1();
-                    item.id = id,
-                        item.name = update.name,
-                        item.timeHorizon = timeHorizon,
-                        item.range = range,
-                        item.dimension1 = update.dimension1,
-                        item.dimension2 = update.dimension2,
-                        item.dimension3 = update.dimension3,
-                        item.values = new typescript_map_1.TSMap();
-                    this._items.set(item);
+                    item.id = id;
+                    item.name = update.name;
+                    item.timeHorizon = timeHorizon;
+                    item.range = range;
+                    item.dimension1 = update.dimension1;
+                    item.dimension2 = update.dimension2;
+                    item.dimension3 = update.dimension3;
+                    item.values = new typescript_map_1.TSMap();
+                    this._items.push(item);
                 }
                 else {
                     item = this._items[index];
@@ -97,21 +96,23 @@ class MetricsMemoryPersistence extends pip_services3_data_node_1.IdentifiableMem
                 let value = null;
                 if (!item.values.has(timeIndex)) {
                     value = new version1_1.MetricRecordValueV1();
-                    value.count = 0,
-                        value.sum = 0,
-                        value.min = update.value,
-                        value.max = update.value;
-                    item.values.set(timeIndex, value);
+                    value.count = 0;
+                    value.sum = 0;
+                    value.min = update.value;
+                    value.max = update.value;
+                    //item.values.set(timeIndex, value);
                 }
                 value.count += 1;
                 value.sum += update.value;
                 value.min = Math.min(value.min, update.value);
                 value.max = Math.max(value.max, update.value);
+                item.values.set(timeIndex, value);
             }
         });
+        this._logger.trace(correlationId, 'Updated metric');
     }
     updateMany(correlationId, updates, maxTimeHorizon) {
-        updates.forEach(function (metricUpdate) {
+        updates.forEach((metricUpdate) => {
             this.updateOne(correlationId, metricUpdate, maxTimeHorizon);
         });
         this._logger.trace(correlationId, 'Updated $n metrics', updates.length);

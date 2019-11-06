@@ -16,8 +16,11 @@ import { MetricRecordIdComposer } from './MetricRecordIdComposer';
 import { IMetricsPersistence } from './IMetricsPersistence';
 import { IReconfigurable } from 'pip-services3-commons-node';
 import { TSMap } from 'typescript-map';
+import { isUndefined } from 'util';
 
-export class MetricsMemoryPersistence extends IdentifiableMemoryPersistence<MetricRecordV1, string> implements IReconfigurable, IMetricsPersistence {
+export class MetricsMemoryPersistence
+    extends IdentifiableMemoryPersistence<MetricRecordV1, string>
+    implements IReconfigurable, IMetricsPersistence {
     private readonly TimeHorizons = [
         TimeHorizonV1.Total,
         TimeHorizonV1.Year,
@@ -84,30 +87,29 @@ export class MetricsMemoryPersistence extends IdentifiableMemoryPersistence<Metr
     }
 
     public updateOne(correlationId: string, update: MetricUpdateV1, maxTimeHorizon: TimeHorizonV1) {
-        this.TimeHorizons.forEach(function (timeHorizon) {
+        let item: MetricRecordV1;
+        this.TimeHorizons.forEach((timeHorizon) => {
             if (timeHorizon <= maxTimeHorizon) {
                 let id = MetricRecordIdComposer.composeIdFromUpdate(timeHorizon, update);
                 let range = TimeRangeComposer.composeRangeFromUpdate(timeHorizon, update);
-                let existItem = this._items.filter(function (elem, index, arr) {
-                    elem.id == id;
+                let index = this._items.findIndex((item) => {
+                    item.id == id;
                 });
-                let index = existItem.id || -1;
 
                 let timeIndex = TimeIndexComposer.composeIndexFromUpdate(timeHorizon, update);
-                let item: MetricRecordV1;
 
                 if (index < 0) {
                     item = new MetricRecordV1();
-                    item.id = id,
-                    item.name = update.name,
-                    item.timeHorizon = timeHorizon,
-                    item.range = range,
-                    item.dimension1 = update.dimension1,
-                    item.dimension2 = update.dimension2,
-                    item.dimension3 = update.dimension3,
+                    item.id = id;
+                    item.name = update.name;
+                    item.timeHorizon = timeHorizon;
+                    item.range = range;
+                    item.dimension1 = update.dimension1;
+                    item.dimension2 = update.dimension2;
+                    item.dimension3 = update.dimension3;
                     item.values = new TSMap<string, MetricRecordValueV1>()
 
-                    this._items.set(item);
+                    this._items.push(item);
                 }
                 else {
                     item = this._items[index];
@@ -117,25 +119,28 @@ export class MetricsMemoryPersistence extends IdentifiableMemoryPersistence<Metr
                 if (!item.values.has(timeIndex)) {
                     value = new MetricRecordValueV1();
 
-                    value.count = 0,
-                        value.sum = 0,
-                        value.min = update.value,
-                        value.max = update.value
+                    value.count = 0;
+                    value.sum = 0;
+                    value.min = update.value;
+                    value.max = update.value;
 
-                    item.values.set(timeIndex, value);
+                    //item.values.set(timeIndex, value);
                 }
 
                 value.count += 1;
                 value.sum += update.value;
                 value.min = Math.min(value.min, update.value);
                 value.max = Math.max(value.max, update.value);
+                
+                item.values.set(timeIndex, value);
             }
         })
+        this._logger.trace(correlationId, 'Updated metric');
     }
 
     public updateMany(correlationId: string, updates: Array<MetricUpdateV1>, maxTimeHorizon: TimeHorizonV1) {
 
-        updates.forEach(function (metricUpdate) {
+        updates.forEach((metricUpdate) => {
             this.updateOne(correlationId, metricUpdate, maxTimeHorizon)
 
         });
