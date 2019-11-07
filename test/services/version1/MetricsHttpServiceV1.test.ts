@@ -59,7 +59,6 @@ suite('MetricsHttpServiceV1', () => {
 
     teardown((done) => {
         service.close(null, (err) => {
-            console.dir("Teardown test");
             persistence.close(null, done);
         });
     });

@@ -14,7 +14,6 @@ export declare class MetricsMongoDbPersistence extends IdentifiableMongoDbPersis
     configure(config: ConfigParams): void;
     private composeFilter;
     getPageByFilter(correlationId: string, filter: FilterParams, paging: PagingParams, callback: (err: any, page: DataPage<MetricRecordV1>) => void): void;
-    set(correlationId: string, item: MetricRecordV1, callback?: (err: any, item: MetricRecordV1) => void): void;
     updateOne(correlationId: string, update: MetricUpdateV1, maxTimeHorizon: TimeHorizonV1): void;
     updateMany(correlationId: string, updates: Array<MetricUpdateV1>, maxTimeHorizon: TimeHorizonV1): void;
     deleteByFilter(correlationId: string, filter: FilterParams, callback?: (err: any) => void): void;

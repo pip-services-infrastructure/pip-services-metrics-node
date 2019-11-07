@@ -11,7 +11,6 @@ const MetricRecordIdComposer_1 = require("./MetricRecordIdComposer");
 const TimeIndexComposer_1 = require("./TimeIndexComposer");
 const MetricRecordValueV1_1 = require("../data/version1/MetricRecordValueV1");
 const typescript_map_1 = require("typescript-map");
-const pip_services3_commons_node_2 = require("pip-services3-commons-node");
 class MetricsMongoDbPersistence extends pip_services3_mongodb_node_1.IdentifiableMongoDbPersistence {
     constructor() {
         //super('metrics', MetricsMongoDbSchema());
@@ -74,84 +73,97 @@ class MetricsMongoDbPersistence extends pip_services3_mongodb_node_1.Identifiabl
     getPageByFilter(correlationId, filter, paging, callback) {
         super.getPageByFilter(correlationId, this.composeFilter(filter), paging, null, null, callback);
     }
-    set(correlationId, item, callback) {
-        if (item == null) {
-            if (callback)
-                callback(null, null);
-            return;
-        }
-        // Assign unique id
-        let newItem = _.omit(item, 'id');
-        newItem._id = item.id || pip_services3_commons_node_2.IdGenerator.nextLong();
-        newItem = this.convertFromPublic(newItem);
-        let filter = {
-            _id: newItem._id
-        };
-        let options = {
-            returnOriginal: false,
-            upsert: true
-        };
-        //this._collection.findOneAndUpdate(filter, {$set:newItem}, options, (err, result) => {
-        this._collection.findOneAndReplace(filter, newItem, options, (err, result) => {
-            if (!err)
-                this._logger.trace(correlationId, "Set in %s with id = %s", this._collection, item.id);
-            if (callback) {
-                newItem = result ? this.convertToPublic(result.value) : null;
-                callback(err, newItem);
+    /*
+        public set(correlationId: string, item: MetricRecordV1, callback?: (err: any, item: MetricRecordV1) => void) {
+    
+            if (item == null) {
+                if (callback) callback(null, null);
+                return;
             }
-        });
-    }
+    
+            // Assign unique id
+            let newItem: any = _.omit(item, 'id');
+            newItem._id = item.id || IdGenerator.nextLong();
+            newItem = this.convertFromPublic(newItem);
+    
+            let filter = {
+                _id: newItem._id
+            };
+    
+            let options = {
+                returnOriginal: false,
+                upsert: true
+            };
+    
+            //this._collection.findOneAndUpdate(filter, {$set:newItem}, options, (err, result) => {
+            this._collection.findOneAndReplace(filter, newItem, options, (err, result) => {
+                if (!err)
+                    this._logger.trace(correlationId, "Set in %s with id = %s", this._collection, item.id);
+    
+                if (callback) {
+                    newItem = result ? this.convertToPublic(result.value) : null;
+                    callback(err, newItem);
+                }
+            });
+        }
+    */
     updateOne(correlationId, update, maxTimeHorizon) {
-        this.TimeHorizons.forEach(function (timeHorizon) {
+        let item;
+        this.TimeHorizons.forEach((timeHorizon) => {
             if (timeHorizon <= maxTimeHorizon) {
                 let id = MetricRecordIdComposer_1.MetricRecordIdComposer.composeIdFromUpdate(timeHorizon, update);
                 let range = TimeRangeComposer_1.TimeRangeComposer.composeRangeFromUpdate(timeHorizon, update);
-                let existItem = this._collection.filter(function (elem, index, arr) {
-                    elem.id == id;
+                this.getOneById(correlationId, id, (err, ret) => {
+                    item = ret;
                 });
-                let index = existItem.id || -1;
                 let timeIndex = TimeIndexComposer_1.TimeIndexComposer.composeIndexFromUpdate(timeHorizon, update);
-                let item;
-                if (index < 0) {
+                if (item == null) {
                     item = new version1_1.MetricRecordV1();
-                    item.id = id,
-                        item.name = update.name,
-                        item.timeHorizon = timeHorizon,
-                        item.range = range,
-                        item.dimension1 = update.dimension1,
-                        item.dimension2 = update.dimension2,
-                        item.dimension3 = update.dimension3,
-                        item.values = new typescript_map_1.TSMap();
-                    this._collection.set(item);
+                    item.id = id;
+                    item.name = update.name;
+                    item.timeHorizon = timeHorizon;
+                    item.range = range;
+                    item.dimension1 = update.dimension1;
+                    item.dimension2 = update.dimension2;
+                    item.dimension3 = update.dimension3;
+                    item.values = new typescript_map_1.TSMap();
                 }
-                else {
-                    item = this._collection[index];
-                }
-                let value = null;
+                let value;
                 if (!item.values.has(timeIndex)) {
                     value = new MetricRecordValueV1_1.MetricRecordValueV1();
-                    value.count = 0,
-                        value.sum = 0,
-                        value.min = update.value,
-                        value.max = update.value;
-                    item.values[timeIndex] = value;
+                    value.count = 0;
+                    value.sum = 0;
+                    value.min = update.value;
+                    value.max = update.value;
+                }
+                else {
+                    value = item.values.get(timeIndex);
                 }
                 value.count += 1;
                 value.sum += update.value;
                 value.min = Math.min(value.min, update.value);
                 value.max = Math.max(value.max, update.value);
+                item.values.set(timeIndex, value);
+                this.set(correlationId, item, (err, ret) => {
+                    if (err != null) {
+                        this._logger.error(correlationId, err, 'METRIC SET ERR', 'Metric update error');
+                    }
+                    else {
+                        this._logger.trace(correlationId, 'Updated metric');
+                    }
+                });
             }
         });
     }
     updateMany(correlationId, updates, maxTimeHorizon) {
-        updates.forEach(function (metricUpdate) {
+        updates.forEach((metricUpdate) => {
             this.updateOne(correlationId, metricUpdate, maxTimeHorizon);
         });
         this._logger.trace(correlationId, 'Updated $n metrics', updates.length);
     }
     deleteByFilter(correlationId, filter, callback) {
         super.deleteByFilter(correlationId, this.composeFilter(filter), (err) => {
-            if (err != null) {
+            if (err == null) {
                 this._logger.trace(correlationId, "Deleted metrics");
             }
             callback(err);

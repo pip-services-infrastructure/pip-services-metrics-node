@@ -21,7 +21,7 @@ const METRICVALUE1: MetricRecordValueV1 = {
 
 const METRIC1: MetricRecordV1 = {
     id: '1',
-    name: 'Metric1',
+    name: 'Metric_1',
     timeHorizon: TimeHorizonV1.Day,
     range: 2019,
     dimension1: 'dim1',
@@ -31,7 +31,7 @@ const METRIC1: MetricRecordV1 = {
 };
 const METRIC2: MetricRecordV1 = {
     id: '2',
-    name: 'Metric2',
+    name: 'Metric_2',
     timeHorizon: TimeHorizonV1.Hour,
     range: 24,
     dimension1: 'dim1',
@@ -41,7 +41,7 @@ const METRIC2: MetricRecordV1 = {
 };
 const METRIC3: MetricRecordV1 = {
     id: '3',
-    name: 'Metric3',
+    name: 'Metric_3',
     timeHorizon: TimeHorizonV1.Month,
     range: 6,
     dimension1: 'dim1',
@@ -176,7 +176,7 @@ export class MetricsPersistenceFixture {
                 this._persistence.deleteByFilter(
                     null,
                     FilterParams.fromTuples(
-                        'name','Metric2'
+                        'name','Metric_2'
                     ),
                     (err) => {
                         assert.isNull(err);
@@ -189,7 +189,7 @@ export class MetricsPersistenceFixture {
                 this._persistence.getPageByFilter(
                     null,
                     FilterParams.fromTuples(
-                        'name','Metric2'
+                        'name','Metric_2'
                     ),
                     new PagingParams(),
                     (err, page) => {
@@ -215,7 +215,7 @@ export class MetricsPersistenceFixture {
                 this._persistence.getPageByFilter(
                     null,
                     FilterParams.fromTuples(
-                        'name', 'Metric1'
+                        'name', 'Metric_1'
                     ),
                     new PagingParams(),
                     (err, page) => {
@@ -231,7 +231,7 @@ export class MetricsPersistenceFixture {
                 this._persistence.getPageByFilter(
                     null,
                     FilterParams.fromTuples(
-                        'names', 'Metric2,Metric3'
+                        'names', 'Metric_2,Metric_3'
                     ),
                     new PagingParams(),
                     (err, page) => {

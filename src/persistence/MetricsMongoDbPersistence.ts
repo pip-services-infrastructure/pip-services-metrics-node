@@ -18,6 +18,7 @@ import { MetricRecordValueV1 } from '../data/version1/MetricRecordValueV1';
 import { TSMap } from 'typescript-map';
 
 import { IdGenerator } from 'pip-services3-commons-node';
+import { isUndefined } from 'util';
 
 export class MetricsMongoDbPersistence
     extends IdentifiableMongoDbPersistence<MetricRecordV1, string>
@@ -99,92 +100,64 @@ export class MetricsMongoDbPersistence
         super.getPageByFilter(correlationId, this.composeFilter(filter), paging, null, null, callback);
     }
 
-    public set(correlationId: string, item: MetricRecordV1, callback?: (err: any, item: MetricRecordV1) => void) {
-
-        if (item == null) {
-            if (callback) callback(null, null);
-            return;
-        }
-
-        // Assign unique id
-        let newItem: any = _.omit(item, 'id');
-        newItem._id = item.id || IdGenerator.nextLong();
-        newItem = this.convertFromPublic(newItem);
-
-        let filter = {
-            _id: newItem._id
-        };
-
-        let options = {
-            returnOriginal: false,
-            upsert: true
-        };
-
-        //this._collection.findOneAndUpdate(filter, {$set:newItem}, options, (err, result) => {
-        this._collection.findOneAndReplace(filter, newItem, options, (err, result) => {
-            if (!err)
-                this._logger.trace(correlationId, "Set in %s with id = %s", this._collection, item.id);
-
-            if (callback) {
-                newItem = result ? this.convertToPublic(result.value) : null;
-                callback(err, newItem);
-            }
-        });
-    }
-
     public updateOne(correlationId: string, update: MetricUpdateV1, maxTimeHorizon: TimeHorizonV1) {
-        this.TimeHorizons.forEach(function (timeHorizon) {
+        let item: MetricRecordV1;
+        this.TimeHorizons.forEach((timeHorizon) => {
             if (timeHorizon <= maxTimeHorizon) {
                 let id = MetricRecordIdComposer.composeIdFromUpdate(timeHorizon, update);
                 let range = TimeRangeComposer.composeRangeFromUpdate(timeHorizon, update);
-                let existItem = this._collection.filter(function (elem, index, arr) {
-                    elem.id == id;
+                this.getOneById(correlationId, id, (err, ret) => {
+                    item = ret;
                 });
-                let index = existItem.id || -1;
 
                 let timeIndex = TimeIndexComposer.composeIndexFromUpdate(timeHorizon, update);
-                let item: MetricRecordV1;
 
-                if (index < 0) {
+                if (item == null) {
                     item = new MetricRecordV1();
-                    item.id = id,
-                        item.name = update.name,
-                        item.timeHorizon = timeHorizon,
-                        item.range = range,
-                        item.dimension1 = update.dimension1,
-                        item.dimension2 = update.dimension2,
-                        item.dimension3 = update.dimension3,
-                        item.values = new TSMap<string, MetricRecordValueV1>()
-
-                    this._collection.set(item);
-                }
-                else {
-                    item = this._collection[index];
+                    item.id = id;
+                    item.name = update.name;
+                    item.timeHorizon = timeHorizon;
+                    item.range = range;
+                    item.dimension1 = update.dimension1;
+                    item.dimension2 = update.dimension2;
+                    item.dimension3 = update.dimension3;
+                    item.values = new TSMap<string, MetricRecordValueV1>()
                 }
 
-                let value: MetricRecordValueV1 = null;
+                let value: MetricRecordValueV1;
                 if (!item.values.has(timeIndex)) {
                     value = new MetricRecordValueV1();
 
-                    value.count = 0,
-                        value.sum = 0,
-                        value.min = update.value,
-                        value.max = update.value
+                    value.count = 0;
+                    value.sum = 0;
+                    value.min = update.value;
+                    value.max = update.value;
 
-                    item.values[timeIndex] = value;
+                } else {
+                    value = item.values.get(timeIndex);
                 }
 
                 value.count += 1;
                 value.sum += update.value;
                 value.min = Math.min(value.min, update.value);
                 value.max = Math.max(value.max, update.value);
+
+                item.values.set(timeIndex, value);
+
+                this.set(correlationId, item, (err, ret) => {
+                    if (err != null) {
+                        this._logger.error(correlationId, err, 'METRIC SET ERR', 'Metric update error');
+                    } else {
+                        this._logger.trace(correlationId, 'Updated metric');
+                    }
+                });
             }
         })
 
     }
 
     public updateMany(correlationId: string, updates: Array<MetricUpdateV1>, maxTimeHorizon: TimeHorizonV1) {
-        updates.forEach(function (metricUpdate) {
+        updates.forEach((metricUpdate) => {
             this.updateOne(correlationId, metricUpdate, maxTimeHorizon)
 
         });
@@ -193,7 +166,7 @@ export class MetricsMongoDbPersistence
 
     public deleteByFilter(correlationId: string, filter: FilterParams, callback?: (err: any) => void) {
         super.deleteByFilter(correlationId, this.composeFilter(filter), (err: any) => {
-            if (err != null) {
+            if (err == null) {
                 this._logger.trace(correlationId, "Deleted metrics");
             }
             callback(err);

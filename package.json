@@ -37,24 +37,24 @@
     },
     "dependencies": {
         "geojson-utils": "^1.1.0",
+        "pip-services3-aws-node": "^3.0.0",
         "pip-services3-commons-node": "^3.0.0",
         "pip-services3-components-node": "^3.0.0",
         "pip-services3-container-node": "^3.0.0",
         "pip-services3-data-node": "^3.0.0",
-        "pip-services3-aws-node": "^3.0.0",
+        "pip-services3-mongodb-node": "^3.2.3",
         "pip-services3-rpc-node": "^3.0.0",
-        "pip-services3-mongodb-node": "^3.0.0",
         "pip-services3-seneca-node": "^3.0.0",
         "typescript-map": "*"
     },
     "devDependencies": {
         "@types/async": "^2.0.0",
         "@types/chai": "*",
-        "@types/lodash": "^4.0.0",
+        "@types/lodash": "^4.14.145",
         "@types/mocha": "*",
         "@types/mongodb": "^2.1.38",
         "@types/mongoose": "^4.7.51",
-        "@types/node": "^12.12.5",
+        "@types/node": "^12.12.6",
         "chai": "*",
         "mocha": "*",
         "restify": "^4.3.0"
