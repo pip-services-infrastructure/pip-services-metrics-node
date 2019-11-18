@@ -14,7 +14,6 @@ import { FilterParams } from 'pip-services3-commons-node';
 import { PagingParams } from 'pip-services3-commons-node';
 import { DataPage } from 'pip-services3-commons-node';
 import { MetricDefinitionV1 } from '../data/version1';
-import { TSMap } from 'typescript-map';
 import { isUndefined } from 'util';
 import { TimeHorizonConverter } from '../persistence';
 import { TimeIndexComposer } from '../persistence';
@@ -28,7 +27,7 @@ import { TimeParser } from '../persistence/TimeParser';
 export class MetricsController
     implements ICommandable, IMetricsController, IConfigurable, IReferenceable {
 
-    private _defaultConfig: ConfigParams = ConfigParams.fromTuples("dependencies.persistence", "metrics:persistence:*:*:1.0");
+    private _defaultConfig: ConfigParams = ConfigParams.fromTuples("dependencies.persistence", "pip-services-metrics:persistence:*:*:1.0");
 
     private _persistence: IMetricsPersistence;
     private _commandSet: MetricsCommandSet;
@@ -42,7 +41,7 @@ export class MetricsController
 
     public setReferences(references: IReferences): void {
         this._persistence = references.getOneRequired<IMetricsPersistence>(
-            new Descriptor('metrics', 'persistence', '*', '*', '1.0')
+            new Descriptor('pip-services-metrics', 'persistence', '*', '*', '1.0')
         );
     }
 
@@ -68,7 +67,7 @@ export class MetricsController
         let error: any = null;
         let count: number;
 
-        let definitions = new TSMap<string, MetricDefinitionV1>();
+        let definitions = new Map<string, MetricDefinitionV1>();
         while (true) {
             this._persistence.getPageByFilter(correlationId, filter, paging, (err, page) => {
                 let definition: MetricDefinitionV1;
@@ -104,7 +103,7 @@ export class MetricsController
                 break;
 
         }
-        callback(error, definitions.values());
+        callback(error, Array.from(definitions.values()));
     }
 
     public getMetricDefinitions(correlationId: string, callback: (err: any, items: Array<MetricDefinitionV1>) => void) {
@@ -117,7 +116,7 @@ export class MetricsController
         });
     }
 
-    public updateMetric(correlationId: string, update: MetricUpdateV1, maxTimeHorizon: TimeHorizonV1) { 
+    public updateMetric(correlationId: string, update: MetricUpdateV1, maxTimeHorizon: TimeHorizonV1) {
         this._persistence.updateOne(correlationId, update, maxTimeHorizon);
     }
 
@@ -130,11 +129,11 @@ export class MetricsController
         var fromIndex = TimeIndexComposer.composeFromIndexFromFilter(timeHorizon, filter);
         var toIndex = TimeIndexComposer.composeToIndexFromFilter(timeHorizon, filter);
         // Convert records into value sets
-        let sets = new TSMap<string, MetricValueSetV1>();
+        let sets = new Map<string, MetricValueSetV1>();
 
         this._persistence.getPageByFilter(correlationId, filter, paging, (err, page) => {
 
-            page.data.forEach((record, index, arr) => {
+            for (let record of page.data) {
                 // Generate index
                 let id = record.name + "_" + record.dimension1
                     + "_" + record.dimension2
@@ -154,21 +153,21 @@ export class MetricsController
                     sets.set(id, set);
                 }
 
-                record.values.forEach((entry, key, index) => {
+                for (let key in record.values) {
                     if (key.localeCompare(fromIndex) < 0 || key.localeCompare(toIndex) > 0)
                         return;
 
                     var value = new MetricValueV1();
                     TimeParser.parseTime(key, timeHorizon, value);
-                    value.count = entry.count;
-                    value.sum = entry.sum;
-                    value.min = entry.min;
-                    value.max = entry.max;
+                    value.count = record.values[key].count;
+                    value.sum = record.values[key].sum;
+                    value.min = record.values[key].min;
+                    value.max = record.values[key].max;
                     set.values.push(value);
 
-                });
-            });
-            callback(err, new DataPage<MetricValueSetV1>(sets.values(), page.total));
+                };
+            }
+            callback(err, new DataPage<MetricValueSetV1>(Array.from(sets.values()), page.total));
         });
     }
 }

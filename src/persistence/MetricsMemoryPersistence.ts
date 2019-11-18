@@ -15,8 +15,6 @@ import { DataPage } from 'pip-services3-commons-node';
 import { MetricRecordIdComposer } from './MetricRecordIdComposer';
 import { IMetricsPersistence } from './IMetricsPersistence';
 import { IReconfigurable } from 'pip-services3-commons-node';
-import { TSMap } from 'typescript-map';
-import { isUndefined } from 'util';
 
 export class MetricsMemoryPersistence
     extends IdentifiableMemoryPersistence<MetricRecordV1, string>
@@ -37,6 +35,9 @@ export class MetricsMemoryPersistence
     constructor(loader?: ILoader<MetricRecordV1>, saver?: ISaver<MetricRecordV1>) {
         super(loader, saver);
     }
+    // constructor() {
+    //     super();
+    // }
 
     public configure(config: ConfigParams): void {
         this._maxPageSize = config.getAsIntegerWithDefault("max_page_size", this._maxPageSize);
@@ -65,7 +66,7 @@ export class MetricsMemoryPersistence
                 return false;
             if (names != null && _.indexOf(names, item.name) < 0)
                 return false;
-            if (timeHorizon != TimeHorizonV1.Total && item.timeHorizon != timeHorizon)
+            if (item.timeHorizon != timeHorizon)
                 return false;
             if (fromRange != TimeHorizonV1.Total && item.range < fromRange)
                 return false;
@@ -88,7 +89,7 @@ export class MetricsMemoryPersistence
 
     public updateOne(correlationId: string, update: MetricUpdateV1, maxTimeHorizon: TimeHorizonV1) {
         let item: MetricRecordV1;
-        this.TimeHorizons.forEach((timeHorizon) => {
+        for (let timeHorizon of this.TimeHorizons) {
             if (timeHorizon <= maxTimeHorizon) {
                 let id = MetricRecordIdComposer.composeIdFromUpdate(timeHorizon, update);
                 let range = TimeRangeComposer.composeRangeFromUpdate(timeHorizon, update);
@@ -107,7 +108,7 @@ export class MetricsMemoryPersistence
                     item.dimension1 = update.dimension1;
                     item.dimension2 = update.dimension2;
                     item.dimension3 = update.dimension3;
-                    item.values = new TSMap<string, MetricRecordValueV1>()
+                    item.values = new Object();
 
                     index = this._items.push(item) - 1;
                 } else {
@@ -115,7 +116,7 @@ export class MetricsMemoryPersistence
                 }
 
                 let value: MetricRecordValueV1;
-                if (!item.values.has(timeIndex)) {
+                if (!item.values[timeIndex]) {
                     value = new MetricRecordValueV1();
 
                     value.count = 0;
@@ -123,20 +124,19 @@ export class MetricsMemoryPersistence
                     value.min = update.value;
                     value.max = update.value;
 
-                    //item.values.set(timeIndex, value);
                 } else {
-                    value = item.values.get(timeIndex);
+                    value = item.values[timeIndex];
                 }
 
                 value.count += 1;
                 value.sum += update.value;
                 value.min = Math.min(value.min, update.value);
                 value.max = Math.max(value.max, update.value);
-                
-                item.values.set(timeIndex, value);
+
+                item.values[timeIndex] = value;
                 this._items[index] = item;
             }
-        })
+        }
         this._logger.trace(correlationId, 'Updated metric');
     }
 

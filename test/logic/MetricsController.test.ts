@@ -26,8 +26,8 @@ suite('MetricsControllerTest', () => {
         controller.configure(new ConfigParams());
 
         let references = References.fromTuples(
-            new Descriptor('metrics', 'persistence', 'memory', 'default', '1.0'), persistence,
-            new Descriptor('metrics', 'controller', 'default', 'default', '1.0'), controller
+            new Descriptor('pip-services-metrics', 'persistence', 'memory', 'default', '1.0'), persistence,
+            new Descriptor('pip-services-metrics', 'controller', 'default', 'default', '1.0'), controller
         );
 
         controller.setReferences(references);

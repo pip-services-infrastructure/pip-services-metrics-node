@@ -35,10 +35,10 @@ suite('MetricsHttpClientV1', () => {
         client.configure(httpConfig);
 
         let references = References.fromTuples(
-            new Descriptor('metrics', 'persistence', 'memory', 'default', '1.0'), persistence,
-            new Descriptor('metrics', 'controller', 'default', 'default', '1.0'), controller,
-            new Descriptor('metrics', 'service', 'http', 'default', '1.0'), service,
-            new Descriptor('metrics', 'client', 'http', 'default', '1.0'), client
+            new Descriptor('pip-services-metrics', 'persistence', 'memory', 'default', '1.0'), persistence,
+            new Descriptor('pip-services-metrics', 'controller', 'default', 'default', '1.0'), controller,
+            new Descriptor('pip-services-metrics', 'service', 'http', 'default', '1.0'), service,
+            new Descriptor('pip-services-metrics', 'client', 'http', 'default', '1.0'), client
         );
         controller.setReferences(references);
         service.setReferences(references);
@@ -47,14 +47,12 @@ suite('MetricsHttpClientV1', () => {
         fixture = new MetricsClientV1Fixture(client);
 
         persistence.open(null, (err) => {
-            //console.dir("MetricsHttpClientV1:Persistence:Open");
             if (err) {
                 done(err);
                 return;
             }
 
             service.open(null, (err) => {
-                //console.dir("MetricsHttpClientV1:Service:Open");
                 if (err) {
                     done(err);
                     return;

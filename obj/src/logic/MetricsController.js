@@ -9,7 +9,6 @@ const pip_services3_commons_node_4 = require("pip-services3-commons-node");
 const pip_services3_commons_node_5 = require("pip-services3-commons-node");
 const pip_services3_commons_node_6 = require("pip-services3-commons-node");
 const version1_2 = require("../data/version1");
-const typescript_map_1 = require("typescript-map");
 const util_1 = require("util");
 const persistence_1 = require("../persistence");
 const persistence_2 = require("../persistence");
@@ -18,12 +17,12 @@ const MetricValueV1_1 = require("../data/version1/MetricValueV1");
 const TimeParser_1 = require("../persistence/TimeParser");
 class MetricsController {
     constructor() {
-        this._defaultConfig = pip_services3_commons_node_1.ConfigParams.fromTuples("dependencies.persistence", "metrics:persistence:*:*:1.0");
+        this._defaultConfig = pip_services3_commons_node_1.ConfigParams.fromTuples("dependencies.persistence", "pip-services-metrics:persistence:*:*:1.0");
         this.component = version1_1.MetricsConstants.MetricsController;
         this._dependencyResolver = new pip_services3_commons_node_2.DependencyResolver(this._defaultConfig);
     }
     setReferences(references) {
-        this._persistence = references.getOneRequired(new pip_services3_commons_node_3.Descriptor('metrics', 'persistence', '*', '*', '1.0'));
+        this._persistence = references.getOneRequired(new pip_services3_commons_node_3.Descriptor('pip-services-metrics', 'persistence', '*', '*', '1.0'));
     }
     configure(config) {
         //this._dependencyResolver.configure(config);
@@ -40,7 +39,7 @@ class MetricsController {
         let paging = new pip_services3_commons_node_5.PagingParams(0, take);
         let error = null;
         let count;
-        let definitions = new typescript_map_1.TSMap();
+        let definitions = new Map();
         while (true) {
             this._persistence.getPageByFilter(correlationId, filter, paging, (err, page) => {
                 let definition;
@@ -74,7 +73,7 @@ class MetricsController {
             else
                 break;
         }
-        callback(error, definitions.values());
+        callback(error, Array.from(definitions.values()));
     }
     getMetricDefinitions(correlationId, callback) {
         return this.getMetricDefinitionsName(correlationId, null, callback);
@@ -95,9 +94,9 @@ class MetricsController {
         var fromIndex = persistence_2.TimeIndexComposer.composeFromIndexFromFilter(timeHorizon, filter);
         var toIndex = persistence_2.TimeIndexComposer.composeToIndexFromFilter(timeHorizon, filter);
         // Convert records into value sets
-        let sets = new typescript_map_1.TSMap();
+        let sets = new Map();
         this._persistence.getPageByFilter(correlationId, filter, paging, (err, page) => {
-            page.data.forEach((record, index, arr) => {
+            for (let record of page.data) {
                 // Generate index
                 let id = record.name + "_" + record.dimension1
                     + "_" + record.dimension2
@@ -115,19 +114,20 @@ class MetricsController {
                     set.values = new Array();
                     sets.set(id, set);
                 }
-                record.values.forEach((entry, key, index) => {
+                for (let key in record.values) {
                     if (key.localeCompare(fromIndex) < 0 || key.localeCompare(toIndex) > 0)
                         return;
                     var value = new MetricValueV1_1.MetricValueV1();
                     TimeParser_1.TimeParser.parseTime(key, timeHorizon, value);
-                    value.count = entry.count;
-                    value.sum = entry.sum;
-                    value.min = entry.min;
-                    value.max = entry.max;
+                    value.count = record.values[key].count;
+                    value.sum = record.values[key].sum;
+                    value.min = record.values[key].min;
+                    value.max = record.values[key].max;
                     set.values.push(value);
-                });
-            });
-            callback(err, new pip_services3_commons_node_6.DataPage(sets.values(), page.total));
+                }
+                ;
+            }
+            callback(err, new pip_services3_commons_node_6.DataPage(Array.from(sets.values()), page.total));
         });
     }
 }

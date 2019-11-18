@@ -20,12 +20,16 @@ suite('MetricsMemoryPersistence', () => {
         persistence.close(null, done);
     });
 
-    test('CRUD Operations', (done) => {
-        fixture.testCrudOperations(done);
+    test('Simple Metrics', (done) => {
+        fixture.testSimpleMetrics(done);
     });
 
-    test('Get with Filters', (done) => {
-        fixture.testGetWithFilters(done);
+    test('Metric With Dimensions', (done) => {
+        fixture.testMetricWithDimensions(done);
+    });
+
+    test('Get Multiple Metrics', (done) => {
+        fixture.testGetMultipleMetrics(done);
     });
 
 });

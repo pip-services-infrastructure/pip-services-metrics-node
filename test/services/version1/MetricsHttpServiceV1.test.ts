@@ -39,9 +39,9 @@ suite('MetricsHttpServiceV1', () => {
         ));
 
         let references = References.fromTuples(
-            new Descriptor('metrics', 'persistence', 'memory', 'default', '1.0'), persistence,
-            new Descriptor('metrics', 'controller', 'default', 'default', '1.0'), controller,
-            new Descriptor('metrics', 'service', 'http', 'default', '1.0'), service
+            new Descriptor('pip-services-metrics', 'persistence', 'memory', 'default', '1.0'), persistence,
+            new Descriptor('pip-services-metrics', 'controller', 'default', 'default', '1.0'), controller,
+            new Descriptor('pip-services-metrics', 'service', 'http', 'default', '1.0'), service
         );
 
         controller.setReferences(references);
@@ -143,7 +143,7 @@ suite('MetricsHttpServiceV1', () => {
             (callback) => {
                 // Get hour metric
                 let set: MetricValueSetV1;
-               
+
                 rest.post('/v1/metrics/get_metrics_by_filter',
                     {
                         filter: FilterParams.fromTuples(
@@ -263,7 +263,6 @@ suite('MetricsHttpServiceV1', () => {
             },
             (callback) => {
                 // Get a single definition
-                //controller.getMetricDefinitionByName(null, "metric2", (err, definition) => {
                 rest.post('/v1/metrics/get_metric_definition_by_name', null, (err, req, res, definition) => {
                     assert.equal("metric2", definition.name);
                     callback();

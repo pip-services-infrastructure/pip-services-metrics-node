@@ -10,31 +10,31 @@ import { MetricsDirectClientV1 } from '../../../src/clients';
 import { MetricsMongoDbPersistence } from '../../../src/persistence/MetricsMongoDbPersistence';
 
 suite('MetricsDirectClientV1', () => {
-    //let persistence: MetricsMemoryPersistence;
-    let persistence: MetricsMongoDbPersistence;
+    let persistence: MetricsMemoryPersistence;
+    //let persistence: MetricsMongoDbPersistence;
     let controller: MetricsController;
     let client: MetricsDirectClientV1;
     let fixture: MetricsClientV1Fixture;
 
-    let mongoUri = process.env['MONGO_SERVICE_URI'];
-    let mongoHost = process.env['MONGO_SERVICE_HOST'] || 'localhost';
-    let mongoPort = process.env['MONGO_SERVICE_PORT'] || 27017;
-    let mongoDatabase = process.env['MONGO_SERVICE_DB'] || 'test';
+    // let mongoUri = process.env['MONGO_SERVICE_URI'];
+    // let mongoHost = process.env['MONGO_SERVICE_HOST'] || 'localhost';
+    // let mongoPort = process.env['MONGO_SERVICE_PORT'] || 27017;
+    // let mongoDatabase = process.env['MONGO_SERVICE_DB'] || 'test';
 
-    // Exit if mongo connection is not set
-    if (mongoUri == '' && mongoHost == '')
-        return;
+    // // Exit if mongo connection is not set
+    // if (mongoUri == '' && mongoHost == '')
+    //     return;
 
     setup((done) => {
-        //persistence = new MetricsMemoryPersistence();
-        persistence = new MetricsMongoDbPersistence();
-        //persistence.configure(new ConfigParams());
-        persistence.configure(ConfigParams.fromTuples(
-            'connection.uri', mongoUri,
-            'connection.host', mongoHost,
-            'connection.port', mongoPort,
-            'connection.database', mongoDatabase
-        ));
+        persistence = new MetricsMemoryPersistence();
+        //persistence = new MetricsMongoDbPersistence();
+        persistence.configure(new ConfigParams());
+        // persistence.configure(ConfigParams.fromTuples(
+        //     'connection.uri', mongoUri,
+        //     'connection.host', mongoHost,
+        //     'connection.port', mongoPort,
+        //     'connection.database', mongoDatabase
+        // ));
 
         controller = new MetricsController();
         controller.configure(new ConfigParams());
@@ -42,9 +42,9 @@ suite('MetricsDirectClientV1', () => {
         client = new MetricsDirectClientV1();
 
         let references = References.fromTuples(
-            new Descriptor('metrics', 'persistence', 'memory', 'default', '1.0'), persistence,
-            new Descriptor('metrics', 'controller', 'default', 'default', '1.0'), controller,
-            new Descriptor('metrics', 'client', 'direct', 'default', '1.0'), client
+            new Descriptor('pip-services-metrics', 'persistence', 'memory', 'default', '1.0'), persistence,
+            new Descriptor('pip-services-metrics', 'controller', 'default', 'default', '1.0'), controller,
+            new Descriptor('pip-services-metrics', 'client', 'direct', 'default', '1.0'), client
         );
 
         controller.setReferences(references);

@@ -5,9 +5,8 @@ const pip_services3_rpc_node_1 = require("pip-services3-rpc-node");
 const MetricsServiceFactory_1 = require("../build/MetricsServiceFactory");
 class MetricsProcess extends pip_services3_container_node_1.ProcessContainer {
     constructor() {
-        super("metrics", "Analytical metrics microservice");
+        super("pip-services-metrics", "Analytical metrics microservice");
         this._factories.add(new pip_services3_rpc_node_1.DefaultRpcFactory());
-        //this._factories.add(new DefaultAzureFactory());
         this._factories.add(new MetricsServiceFactory_1.MetricsServiceFactory());
     }
 }

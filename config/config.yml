@@ -38,18 +38,18 @@
 
 {{#if MEMORY_ENABLED}}
 # In-memory persistence. Use only for testing!
-- descriptor: "metrics:persistence:memory:default:1.0"
+- descriptor: "pip-services-metrics:persistence:memory:default:1.0"
 {{/if}}
 
 {{#if FILE_ENABLED}}
 # File persistence. Use it for testing of for simple standalone deployments
-- descriptor: "metrics:persistence:file:default:1.0"
+- descriptor: "pip-services-metrics:persistence:file:default:1.0"
   path: {{WEXXLE_METRICS_FILE_PATH}}{{^WEXXLE_METRICS_FILE_PATH}}"../data/metrics.json"{{/WEXXLE_METRICS_FILE_PATH}}
 {{/if}}
 
 {{#if MONGO_ENABLED}}
 # MongoDB Persistence
-- descriptor: "metrics:persistence:mongodb:default:1.0"
+- descriptor: "pip-services-metrics:persistence:mongodb:default:1.0"
   collection: {{MONGO_COLLECTION}}{{^MONGO_COLLECTION}}metrics{{/MONGO_COLLECTION}}
   connection:
     uri: {{MONGO_SERVICE_URI}}{{^MONGO_SERVICE_URI}}mongodb://mongo:27017/wexxle{{/MONGO_SERVICE_URI}}
@@ -57,14 +57,23 @@
 
 {{^MEMORY_ENABLED}}{{^FILE_ENABLED}}{{^MONGO_ENABLED}}
 # Default in-memory persistence
-- descriptor: "metrics:persistence:memory:default:1.0"
+- descriptor: "pip-services-metrics:persistence:memory:default:1.0"
 {{/MONGO_ENABLED}}{{/FILE_ENABLED}}{{/MEMORY_ENABLED}}
 
+# {{^MEMORY_ENABLED}}{{^FILE_ENABLED}}{{^MONGO_ENABLED}}
+# # Default in-mongoDb persistence
+# - descriptor: "pip-services-metrics:persistence:mongodb:default:1.0"
+#   connection:
+#     host: "localhost"
+#     port: 27017
+#     database: "metrics"
+# {{/MONGO_ENABLED}}{{/FILE_ENABLED}}{{/MEMORY_ENABLED}}
+
 # Default controller
-- descriptor: "metrics:controller:default:default:1.0"
+- descriptor: "pip-services-metrics:controller:default:default:1.0"
 
 # HTTP service version 1.0
-- descriptor: "metrics:service:http:default:1.0"
+- descriptor: "pip-services-metrics:service:http:default:1.0"
 
 # HTTP endpoint version 1.0
 - descriptor: "pip-services:endpoint:http:default:1.0"

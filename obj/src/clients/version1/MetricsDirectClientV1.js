@@ -7,7 +7,7 @@ const pip_services3_commons_node_3 = require("pip-services3-commons-node");
 class MetricsDirectClientV1 extends pip_services3_rpc_node_1.DirectClient {
     constructor() {
         super();
-        this._dependencyResolver.put("controller", new pip_services3_commons_node_1.Descriptor("metrics", "controller", "*", "*", "*"));
+        this._dependencyResolver.put("controller", new pip_services3_commons_node_1.Descriptor("pip-services-metrics", "controller", "*", "*", "*"));
     }
     getMetricDefinitions(correlationId, callback) {
         let timing = this.instrument(correlationId, 'metrics.get_metric_definitions');

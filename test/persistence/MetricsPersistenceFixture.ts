@@ -10,45 +10,7 @@ import { IMetricsPersistence } from '../../src/persistence/IMetricsPersistence';
 import { TimeHorizonV1 } from '../../src/data/version1/TimeHorizonV1'
 import { MetricRecordValueV1 } from '../../src/data/version1/MetricRecordValueV1'
 
-import { TSMap } from 'typescript-map';
-
-const METRICVALUE1: MetricRecordValueV1 = {
-     count: 1,
-     sum: 100,
-     max: 100,
-     min: 0
-}
-
-const METRIC1: MetricRecordV1 = {
-    id: '1',
-    name: 'Metric_1',
-    timeHorizon: TimeHorizonV1.Day,
-    range: 2019,
-    dimension1: 'dim1',
-    dimension2: 'dim2',
-    dimension3: 'dim3',
-    values: new TSMap<string, MetricRecordValueV1>().set('value', METRICVALUE1)
-};
-const METRIC2: MetricRecordV1 = {
-    id: '2',
-    name: 'Metric_2',
-    timeHorizon: TimeHorizonV1.Hour,
-    range: 24,
-    dimension1: 'dim1',
-    dimension2: 'dim2',
-    dimension3: 'dim3',
-    values: new TSMap<string, MetricRecordValueV1>().set('value', METRICVALUE1)
-};
-const METRIC3: MetricRecordV1 = {
-    id: '3',
-    name: 'Metric_3',
-    timeHorizon: TimeHorizonV1.Month,
-    range: 6,
-    dimension1: 'dim1',
-    dimension2: 'dim2',
-    dimension3: 'dim3',
-    values: new TSMap<string, MetricRecordValueV1>().set('value', METRICVALUE1)
-};
+import { MetricUpdateV1 } from '../../src';
 
 export class MetricsPersistenceFixture {
     private _persistence: IMetricsPersistence;
@@ -58,225 +20,358 @@ export class MetricsPersistenceFixture {
         this._persistence = persistence;
     }
 
-    private testSetMetrics(done) {
+    public testSimpleMetrics(done) {
         async.series([
-            // Create the first metric
+
             (callback) => {
-                this._persistence.set(
-                    null,
-                    METRIC1,
-                    (err, metric) => {
-                        assert.isNull(err);
-                        assert.isObject(metric);
-                        assert.equal(METRIC1.id, metric.id);
-                        assert.equal(METRIC1.name, metric.name);
-                        assert.equal(METRIC1.timeHorizon, metric.timeHorizon);
-                        assert.equal(METRIC1.range, metric.range);
-                        assert.equal(METRIC1.dimension1, metric.dimension1);
-                        assert.equal(METRIC1.dimension2, metric.dimension2);
-                        assert.equal(METRIC1.dimension3, metric.dimension3);
-                        assert.isNotNull(metric.values);
-
-                        callback();
-                    }
-                );
-            },
-            // Create the second metric
-            (callback) => {
-                this._persistence.set(
-                    null,
-                    METRIC2,
-                    (err, metric) => {
-                        assert.isNull(err);
-                        assert.isObject(metric);
-                        assert.equal(METRIC2.id, metric.id);
-                        assert.equal(METRIC2.name, metric.name);
-                        assert.equal(METRIC2.timeHorizon, metric.timeHorizon);
-                        assert.equal(METRIC2.range, metric.range);
-                        assert.equal(METRIC2.dimension1, metric.dimension1);
-                        assert.equal(METRIC2.dimension2, metric.dimension2);
-                        assert.equal(METRIC2.dimension3, metric.dimension3);
-                        assert.isNotNull(metric.values);
-
-                        callback();
-                    }
-                );
-            },
-            // Create the third metric
-            (callback) => {
-                this._persistence.set(
-                    null,
-                    METRIC3,
-                    (err, metric) => {
-                        assert.isNull(err);
-                        assert.isObject(metric);
-                        assert.equal(METRIC3.id, metric.id);
-                        assert.equal(METRIC3.name, metric.name);
-                        assert.equal(METRIC3.timeHorizon, metric.timeHorizon);
-                        assert.equal(METRIC3.range, metric.range);
-                        assert.equal(METRIC3.dimension1, metric.dimension1);
-                        assert.equal(METRIC3.dimension2, metric.dimension2);
-                        assert.equal(METRIC3.dimension3, metric.dimension3);
-                        assert.isNotNull(metric.values);
-
-                        callback();
-                    }
-                );
-            }
-        ], done);
-    }
-
-    public testCrudOperations(done) {
-        let metric1: MetricRecordV1;
-
-        async.series([
-            // Create items
-            (callback) => {
-                this.testSetMetrics(callback);
-            },
-            // Get all metrics
-            (callback) => {
-                this._persistence.getPageByFilter(
-                    null,
-                    new FilterParams(),
-                    new PagingParams(),
-                    (err, page) => {
-                        assert.isNull(err);
-                        assert.isObject(page);
-                        assert.lengthOf(page.data, 3);
-
-                        metric1 = page.data[0];
-
-                        callback();
-                    }
-                )
-            },
-            /*
-            // Update the metric
-            (callback) => {
-                metric1.label = 'ABC';
-
+                // Update metric once
                 this._persistence.updateOne(
                     null,
-                    metric1,
-                    (err, metric) => {
-                        assert.isNull(err);
-
-                        assert.isObject(metric);
-                        assert.equal(metric1.id, metric.id);
-                        assert.equal('ABC', metric.label);
-
-                        callback();
-                    }
-                )
+                    <MetricUpdateV1>
+                    {
+                        name: "metric2",
+                        year: 2018,
+                        month: 8,
+                        day: 26,
+                        hour: 12,
+                        value: 123
+                    },
+                    TimeHorizonV1.Hour
+                );
+                callback(null);
             },
-*/
-            // Delete the metric
             (callback) => {
-                this._persistence.deleteByFilter(
+                // Update metric second time
+                let updates = new Array<MetricUpdateV1>();
+                updates.push(
+                    <MetricUpdateV1>
+                    {
+                        name: "metric2",
+                        year: 2018,
+                        month: 8,
+                        day: 26,
+                        hour: 13,
+                        value: 321
+                    });
+                this._persistence.updateMany(
                     null,
-                    FilterParams.fromTuples(
-                        'name','Metric_2'
-                    ),
-                    (err) => {
-                        assert.isNull(err);
-                        callback();
-                    }
-                )
+                    updates,
+                    TimeHorizonV1.Hour
+                );
+                callback(null);
             },
-            // Try to get deleted metric
             (callback) => {
+
+                // Get total metric
                 this._persistence.getPageByFilter(
                     null,
                     FilterParams.fromTuples(
-                        'name','Metric_2'
+                        "name", "metric2",
+                        "time_horizon", "total"
                     ),
                     new PagingParams(),
                     (err, page) => {
-                        assert.isNull(err);
-                        assert.isObject(page);
-                        assert.lengthOf(page.data, 0);
-                        callback();
+                        assert.isNotNull(page);
+                        assert.equal(1, page.data.length); 
+                        let record = page.data[0];
+                        assert.equal(444, record.values["total"].sum);
+                        assert.equal(123, record.values["total"].min);
+                        assert.equal(321, record.values["total"].max);
+                        assert.equal(2, record.values["total"].count);
+                        callback(err);
                     }
-                )
-            }
-            
-        ], done);
+                );
+
+            },
+            (callback) => {
+                // Get year metric
+                this._persistence.getPageByFilter(
+                    null,
+                    FilterParams.fromTuples(
+                        "name", "metric2",
+                        "time_horizon", "year",
+                        "from_year", 2018,
+                        "to_year", 2018
+                    ),
+                    new PagingParams(), (err, page) => {
+                        let record = page.data[0];
+                        assert.equal(444, record.values["2018"].sum);
+                        assert.equal(123, record.values["2018"].min);
+                        assert.equal(321, record.values["2018"].max);
+                        assert.equal(2, record.values["2018"].count);
+                        callback(err);
+                    }
+                );
+
+            },
+            (callback) => {
+                // Get month metric
+                this._persistence.getPageByFilter(
+                    null,
+                    FilterParams.fromTuples(
+                        "name", "metric2",
+                        "time_horizon", "month",
+                        "from_year", 2018,
+                        "from_month", 8,
+                        "to_year", 2018,
+                        "to_month", 8
+                    ),
+                    new PagingParams(),
+                    (err, page) => {
+                        assert.equal(1, page.data.length);
+                        let record = page.data[0];
+                        assert.equal(444, record.values["201808"].sum);
+                        assert.equal(123, record.values["201808"].min);
+                        assert.equal(321, record.values["201808"].max);
+                        assert.equal(2, record.values["201808"].count);
+                        callback(err);
+                    }
+                );
+            },
+            (callback) => {
+                // Get day metric
+                this._persistence.getPageByFilter(
+                    null,
+                    FilterParams.fromTuples(
+                        "name", "metric2",
+                        "time_horizon", "day",
+                        "from_year", 2018,
+                        "from_month", 8,
+                        "from_day", 26,
+                        "to_year", 2018,
+                        "to_month", 8,
+                        "to_day", 26
+                    ),
+                    new PagingParams, (err, page) => {
+                        assert.equal(1, page.data.length);
+                        let record = page.data[0];
+                        assert.equal(444, record.values["20180826"].sum);
+                        assert.equal(123, record.values["20180826"].min);
+                        assert.equal(321, record.values["20180826"].max);
+                        assert.equal(2, record.values["20180826"].count);
+                        callback(err);
+                    }
+                );
+
+            },
+            (callback) => {
+                // Get hour metric
+                this._persistence.getPageByFilter(
+                    null,
+                    FilterParams.fromTuples(
+                        "name", "metric2",
+                        "time_horizon", "hour",
+                        "from_year", 2018,
+                        "from_month", 8,
+                        "from_day", 26,
+                        "from_hour", 0,
+                        "to_year", 2018,
+                        "to_month", 8,
+                        "to_day", 26,
+                        "to_hour", 23
+                    ),
+                    new PagingParams, (err, page) => {
+                        assert.equal(1, page.data.length);
+                        let record = page.data[0];
+                        assert.equal(123, record.values["2018082612"].sum);
+                        assert.equal(123, record.values["2018082612"].min);
+                        assert.equal(123, record.values["2018082612"].max);
+                        assert.equal(1, record.values["2018082612"].count);
+
+                        assert.equal(321, record.values["2018082613"].sum);
+                        assert.equal(321, record.values["2018082613"].min);
+                        assert.equal(321, record.values["2018082613"].max);
+                        assert.equal(1, record.values["2018082613"].count);
+                        callback(err);
+                    }
+                );
+
+            }], done);
     }
 
-    public testGetWithFilters(done) {
+    public testMetricWithDimensions(done) {
         async.series([
-            // Create items
             (callback) => {
-                this.testSetMetrics(callback);
+                this._persistence.updateOne(
+                    null,
+                    <MetricUpdateV1>
+                    {
+                        name: "metric1",
+                        dimension1: "A",
+                        dimension2: "B",
+                        dimension3: null,
+                        year: 2018,
+                        month: 8,
+                        day: 26,
+                        hour: 12,
+                        value: 123
+                    },
+                    TimeHorizonV1.Hour
+                );
+                callback(null);
             },
-            // Filter by name
+            (callback) => {
+                let updates = new Array<MetricUpdateV1>();
+                updates.push(<MetricUpdateV1>
+                    {
+                        name: "metric1",
+                        dimension1: "A",
+                        dimension2: "C",
+                        dimension3: null,
+                        year: 2018,
+                        month: 8,
+                        day: 26,
+                        hour: 12,
+                        value: 321
+                    });
+                this._persistence.updateMany(
+                    null,
+                    updates,
+                    TimeHorizonV1.Hour
+                );
+                callback(null);
+            },
             (callback) => {
                 this._persistence.getPageByFilter(
                     null,
                     FilterParams.fromTuples(
-                        'name', 'Metric_1'
+                        "name", "metric1"
                     ),
-                    new PagingParams(),
-                    (err, page) => {
-                        assert.isNull(err);
-                        assert.lengthOf(page.data, 1);
-
-                        callback();
+                    new PagingParams, (err, page) => {
+                        assert.isNotNull(page);
+                        assert.equal(2, page.data.length);
+                        callback(err)
                     }
-                )
+                );
             },
-            // Filter by names
             (callback) => {
                 this._persistence.getPageByFilter(
                     null,
                     FilterParams.fromTuples(
-                        'names', 'Metric_2,Metric_3'
+                        "name", "metric1",
+                        "dimension1", "A"
                     ),
-                    new PagingParams(),
-                    (err, page) => {
-                        assert.isNull(err);
-
-                        assert.lengthOf(page.data, 2);
-
-                        callback();
+                    new PagingParams, (err, page) => {
+                        assert.isNotNull(page);
+                        assert.equal(2, page.data.length);
+                        callback(err);
                     }
-                )
+                );
             },
-            // Filter by dimension2
             (callback) => {
                 this._persistence.getPageByFilter(
                     null,
                     FilterParams.fromTuples(
-                        'dimension2', 'dim2'
+                        "name", "metric1",
+                        "dimension1", "A",
+                        "dimension2", "B"
                     ),
-                    new PagingParams(),
-                    (err, page) => {
-                        assert.isNull(err);
-
-                        assert.lengthOf(page.data, 3);
-
-                        callback();
+                    new PagingParams(), (err, page) => {
+                        assert.isNotNull(page);
+                        assert.equal(1, page.data.length);
+                        callback(err);
                     }
-                )
+                );
+
             },
-            // Filter by time_horizon
+
             (callback) => {
                 this._persistence.getPageByFilter(
                     null,
                     FilterParams.fromTuples(
-                        'time_horizon', TimeHorizonV1.Day
+                        "name", "metric1",
+                        "dimension1", null,
+                        "dimension2", null,
+                        "dimension3", null
                     ),
-                    new PagingParams(),
-                    (err, page) => {
-                        assert.isNull(err);
-
-                        assert.lengthOf(page.data, 1);
-
-                        callback();
+                    new PagingParams, (err, page) => {
+                        assert.isNotNull(page);
+                        assert.equal(2, page.data.length);
+                        callback(err);
                     }
-                )
+                );
+
             },
+            (callback) => {
+                this._persistence.getPageByFilter(
+                    null,
+                    FilterParams.fromTuples(
+                        "name", "metric1",
+                        "dimension1", "na",
+                        "dimension2", "na",
+                        "dimension3", "na"
+                    ),
+                    new PagingParams, (err, page) => {
+                        assert.isNotNull(page);
+                        assert.isEmpty(page.data);
+                        callback(err);
+                    }
+                );
+            }
         ], done);
     }
+
+    public testGetMultipleMetrics(done) {
+        async.series([
+            (callback) => {
+                // Update metrics
+                let updates = new Array<MetricUpdateV1>();
+                updates.push(<MetricUpdateV1>
+                    {
+                        name: "metric.1",
+                        year: 2018,
+                        month: 1,
+                        day: 1,
+                        hour: 1,
+                        value: 123
+                    });
+
+                updates.push(<MetricUpdateV1>
+                    {
+                        name: "metric.2",
+                        year: 2018,
+                        month: 2,
+                        day: 2,
+                        hour: 2,
+                        value: 456
+                    });
+
+                updates.push(<MetricUpdateV1>
+                    {
+                        name: "metric.3",
+                        year: 2018,
+                        month: 3,
+                        day: 3,
+                        hour: 3,
+                        value: 789
+                    });
+
+                this._persistence.updateMany(
+                    null,
+                    updates,
+                    TimeHorizonV1.Hour
+                );
+                callback(null);
+            },
+            (callback) => {
+
+                // Get total metric
+                this._persistence.getPageByFilter(
+                    null,
+                    FilterParams.fromTuples(
+                        "names", "metric.1,metric.2"
+                    ),
+                    new PagingParams(), (err, page) => {
+                        assert.isNotNull(page);
+                        assert.equal(2, page.data.length);
+                        callback(err);
+                    }
+                );
+
+            }
+
+        ], done);
+    }
+
+
 }

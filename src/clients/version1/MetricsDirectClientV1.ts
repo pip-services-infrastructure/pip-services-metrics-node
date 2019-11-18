@@ -15,7 +15,7 @@ export class MetricsDirectClientV1
     implements IMetricsClientV1 {
     public constructor() {
         super();
-        this._dependencyResolver.put("controller", new Descriptor("metrics", "controller", "*", "*", "*"));
+        this._dependencyResolver.put("controller", new Descriptor("pip-services-metrics", "controller", "*", "*", "*"));
     }
 
     public getMetricDefinitions(correlationId: string, callback: (err: any, items: Array<MetricDefinitionV1>) => void) {

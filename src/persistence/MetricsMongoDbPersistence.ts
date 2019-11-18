@@ -3,7 +3,7 @@ import { IdentifiableMongoDbPersistence } from 'pip-services3-mongodb-node';
 import { MetricRecordV1 } from '../data/version1';
 import { IMetricsPersistence } from './IMetricsPersistence';
 import { TimeHorizonV1 } from '../data/version1';
-import { ConfigParams } from 'pip-services3-commons-node';
+import { ConfigParams, MapConverter } from 'pip-services3-commons-node';
 import { FilterParams } from 'pip-services3-commons-node';
 import { TimeHorizonConverter } from './TimeHorizonConverter';
 import { TimeRangeComposer } from './TimeRangeComposer';
@@ -15,10 +15,6 @@ import { MetricRecordIdComposer } from './MetricRecordIdComposer';
 import { TimeIndexComposer } from './TimeIndexComposer';
 import { MetricRecordValueV1 } from '../data/version1/MetricRecordValueV1';
 
-import { TSMap } from 'typescript-map';
-
-import { IdGenerator } from 'pip-services3-commons-node';
-import { isUndefined } from 'util';
 
 export class MetricsMongoDbPersistence
     extends IdentifiableMongoDbPersistence<MetricRecordV1, string>
@@ -65,9 +61,7 @@ export class MetricsMongoDbPersistence
             criteria.push({ name: { $in: names } });
 
         let timeHorizon = TimeHorizonConverter.fromString(filterParams.getAsNullableString("time_horizon"));
-        if (timeHorizon != TimeHorizonV1.Total) {
-            criteria.push({ timeHorizon: timeHorizon });
-        }
+        criteria.push({ timeHorizon: timeHorizon });
 
         let fromRange = TimeRangeComposer.composeFromRangeFromFilter(timeHorizon, filterParams);
         if (fromRange != TimeHorizonV1.Total) {
@@ -101,66 +95,66 @@ export class MetricsMongoDbPersistence
     }
 
     public updateOne(correlationId: string, update: MetricUpdateV1, maxTimeHorizon: TimeHorizonV1) {
-        let item: MetricRecordV1;
-        this.TimeHorizons.forEach((timeHorizon) => {
-            if (timeHorizon <= maxTimeHorizon) {
-                let id = MetricRecordIdComposer.composeIdFromUpdate(timeHorizon, update);
-                let range = TimeRangeComposer.composeRangeFromUpdate(timeHorizon, update);
-                this.getOneById(correlationId, id, (err, ret) => {
-                    item = ret;
-                });
-
-                let timeIndex = TimeIndexComposer.composeIndexFromUpdate(timeHorizon, update);
-
-                if (item == null) {
-                    item = new MetricRecordV1();
-                    item.id = id;
-                    item.name = update.name;
-                    item.timeHorizon = timeHorizon;
-                    item.range = range;
-                    item.dimension1 = update.dimension1;
-                    item.dimension2 = update.dimension2;
-                    item.dimension3 = update.dimension3;
-                    item.values = new TSMap<string, MetricRecordValueV1>()
-                }
-
-                let value: MetricRecordValueV1;
-                if (!item.values.has(timeIndex)) {
-                    value = new MetricRecordValueV1();
-
-                    value.count = 0;
-                    value.sum = 0;
-                    value.min = update.value;
-                    value.max = update.value;
-
-                } else {
-                    value = item.values.get(timeIndex);
-                }
-
-                value.count += 1;
-                value.sum += update.value;
-                value.min = Math.min(value.min, update.value);
-                value.max = Math.max(value.max, update.value);
-
-                item.values.set(timeIndex, value);
-
-                this.set(correlationId, item, (err, ret) => {
-                    if (err != null) {
-                        this._logger.error(correlationId, err, 'METRIC SET ERR', 'Metric update error');
-                    } else {
-                        this._logger.trace(correlationId, 'Updated metric');
-                    }
-                });
-            }
-        })
-
+        let updates = new Array<MetricUpdateV1>();
+        updates.push(update);
+        this.updateMany(correlationId, updates, maxTimeHorizon);
+        this._logger.trace(correlationId, 'Updated metric');
     }
 
     public updateMany(correlationId: string, updates: Array<MetricUpdateV1>, maxTimeHorizon: TimeHorizonV1) {
-        updates.forEach((metricUpdate) => {
-            this.updateOne(correlationId, metricUpdate, maxTimeHorizon)
 
-        });
+        let batch = this._collection.initializeUnorderedBulkOp();
+        let opCounter = 0;
+
+        for (let update of updates) {
+            for (let timeHorizon of this.TimeHorizons) {
+                if (timeHorizon <= maxTimeHorizon) {
+                    let id = MetricRecordIdComposer.composeIdFromUpdate(timeHorizon, update);
+                    let range = TimeRangeComposer.composeRangeFromUpdate(timeHorizon, update);
+                    let timeIndex = TimeIndexComposer.composeIndexFromUpdate(timeHorizon, update);
+                    opCounter += opCounter;
+
+                    // Add to bulk operations
+                    batch
+                        .find({ _id: id })
+                        .upsert()
+                        .updateOne({
+                            $setOnInsert: {
+                                name: update.name,
+                                timeHorizon: timeHorizon,
+                                range: range,
+                                dimension1: update.dimension1,
+                                dimension2: update.dimension2,
+                                dimension3: update.dimension3
+                            },
+                            $inc: {
+                                ["values." + timeIndex + ".count"]: 1,
+                                ["values." + timeIndex + ".sum"]: update.value
+                            },
+                            $min: { ["values." + timeIndex + ".min"]: update.value },
+                            $max: { ["values." + timeIndex + ".max"]: update.value }
+                        });
+
+                    if (opCounter >= 200) {
+                        opCounter = 0;
+                        batch.execute((err) => {
+                            if (err != null) {
+                                this._logger.error(correlationId, err, 'METRIC SET ERR', 'Metric update error');
+                            }
+                        })
+                    }
+
+                }
+            }
+            if (opCounter >= 0) {
+                batch.execute((err) => {
+                    if (err != null) {
+                        this._logger.error(correlationId, err, 'METRIC SET ERR', 'Metric update error');
+                    }
+                })
+            }
+        }
+
         this._logger.trace(correlationId, 'Updated $n metrics', updates.length);
     }
 

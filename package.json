@@ -32,7 +32,7 @@
         "relaunch": "tsc && node run",
         "test": "mocha -t 5000 -R spec -u tdd --recursive ./obj/test",
         "retest": "tsc && mocha -t 5000 -R spec -u tdd --recursive ./obj/test",
-        "benchmark": "matcha -R clean -I tdd ./obj/benchmark/run.js",
+        "benchmark": "node ./obj/benchmark/run.js",
         "rebenchmark": "tsc && matcha -R clean -I tdd ./obj/benchmark/run.js"
     },
     "dependencies": {
@@ -57,6 +57,7 @@
         "@types/node": "^12.12.6",
         "chai": "*",
         "mocha": "*",
-        "restify": "^4.3.0"
+        "restify": "^4.3.0",
+        "pip-benchmark-node": "https://github.com/pip-benchmark/pip-benchmark-node.git"
     }
 }
