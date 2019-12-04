@@ -1,5 +1,5 @@
 {
-    "name": "pip-services3-metrics-node",
+    "name": "pip-services-metrics-node",
     "version": "1.0.0",
     "author": "Conceptual Vision Consulting LLC",
     "description": "Metrics microservice in Node.js",
@@ -18,7 +18,7 @@
     "noAnalyze": true,
     "repository": {
         "type": "git",
-        "url": "https://github.com/pip-services3-infrastructure/pip-services3-clusters-node.git"
+        "url": "https://github.com/pip-services-infrastructure/pip-services-metrics-node.git"
     },
     "license": "MIT",
     "engines": {
@@ -36,16 +36,13 @@
         "rebenchmark": "tsc && matcha -R clean -I tdd ./obj/benchmark/run.js"
     },
     "dependencies": {
-        "geojson-utils": "^1.1.0",
         "pip-services3-aws-node": "^3.0.0",
         "pip-services3-commons-node": "^3.0.0",
         "pip-services3-components-node": "^3.0.0",
         "pip-services3-container-node": "^3.0.0",
         "pip-services3-data-node": "^3.0.0",
         "pip-services3-mongodb-node": "^3.2.3",
-        "pip-services3-rpc-node": "^3.0.0",
-        "pip-services3-seneca-node": "^3.0.0",
-        "typescript-map": "*"
+        "pip-services3-rpc-node": "^3.0.0"
     },
     "devDependencies": {
         "@types/async": "^2.0.0",
@@ -53,7 +50,6 @@
         "@types/lodash": "^4.14.145",
         "@types/mocha": "*",
         "@types/mongodb": "^2.1.38",
-        "@types/mongoose": "^4.7.51",
         "@types/node": "^12.12.6",
         "chai": "*",
         "mocha": "*",
