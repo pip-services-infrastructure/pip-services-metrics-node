@@ -1,1 +1,1 @@
-export { MetricsHttpServiceV1 } from './MetricsHttpServiceV1'
+export { MetricsHttpServiceV1 } from './MetricsHttpServiceV1';

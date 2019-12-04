@@ -1,5 +1,4 @@
-﻿import { CommandSet, DataPage } from 'pip-services3-commons-node';
-import { IMetricsController } from './IMetricsController';
+﻿import { CommandSet } from 'pip-services3-commons-node';
 import { ICommand } from 'pip-services3-commons-node';
 import { Command } from 'pip-services3-commons-node';
 import { ObjectSchema } from 'pip-services3-commons-node'
@@ -8,19 +7,20 @@ import { PagingParamsSchema } from 'pip-services3-commons-node';
 import { FilterParams } from 'pip-services3-commons-node';
 import { PagingParams } from 'pip-services3-commons-node';
 import { TypeCode } from 'pip-services3-commons-node';
+import { ArraySchema } from 'pip-services3-commons-node';
+import { Parameters } from 'pip-services3-commons-node';
+
+import { IMetricsController } from './IMetricsController';
 import { MetricUpdateV1Schema } from '../data/version1/MetricUpdateV1Schema';
 import { TimeHorizonV1 } from '../data/version1/TimeHorizonV1';
-import { ArraySchema } from 'pip-services3-commons-node';
-import { MetricDefinitionV1,} from '../data';
-import { MetricValueSetV1 } from '../data';
-import { MetricUpdateV1 } from '../data';
-import { Parameters } from 'pip-services3-commons-node';
+import { MetricDefinitionV1,} from '../data/version1/MetricDefinitionV1';
+import { MetricValueSetV1 } from '../data/version1/MetricValueSetV1';
+import { MetricUpdateV1 } from '../data/version1/MetricUpdateV1';
 
 export class MetricsCommandSet extends CommandSet {
     private _controller: IMetricsController;
 
     constructor(controller: IMetricsController) {
-
         super();
         this._controller = controller;
 
@@ -47,6 +47,7 @@ export class MetricsCommandSet extends CommandSet {
                 .withOptionalProperty("name", TypeCode.String),
             (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
                 let name = args.getAsString("name");
+
                 this._controller.getMetricDefinitionByName(correlationId, name, callback);
             });
     }
@@ -60,6 +61,7 @@ export class MetricsCommandSet extends CommandSet {
             (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
                 let filter = FilterParams.fromValue(args.get("filter"));
                 let paging = PagingParams.fromValue(args.get("paging"));
+
                 this._controller.getMetricsByFilter(correlationId, filter, paging, callback);
             });
     }
@@ -71,9 +73,12 @@ export class MetricsCommandSet extends CommandSet {
                 .withRequiredProperty("update", new MetricUpdateV1Schema())
                 .withOptionalProperty("max_time_horizon", TypeCode.Long),
             (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
-                var update = args.getAsObject("update");
-                var maxTimeHorizon = args.getAsIntegerWithDefault("max_time_horizon", TimeHorizonV1.Hour);
-                this._controller.updateMetric(correlationId, update, maxTimeHorizon);
+                let update = args.getAsObject("update");
+                let maxTimeHorizon = args.getAsIntegerWithDefault("max_time_horizon", TimeHorizonV1.Hour);
+
+                this._controller.updateMetric(correlationId, update, maxTimeHorizon, (err) => {
+                    callback(err, null);
+                });
             });
     }
 
@@ -84,10 +89,12 @@ export class MetricsCommandSet extends CommandSet {
                 .withRequiredProperty("updates", new ArraySchema(new MetricUpdateV1Schema()))
                 .withOptionalProperty("max_time_horizon", TypeCode.Long),
             (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
-                var updates = args.getAsArray("updates");
-                var maxTimeHorizon = args.getAsIntegerWithDefault("max_time_horizon", TimeHorizonV1.Hour);
-                this._controller.updateMetrics(correlationId, updates, maxTimeHorizon);
-                return null;
+                let updates = args.getAsArray("updates");
+                let maxTimeHorizon = args.getAsIntegerWithDefault("max_time_horizon", TimeHorizonV1.Hour);
+
+                this._controller.updateMetrics(correlationId, updates, maxTimeHorizon, (err) => {
+                    callback(err, null);
+                });
             });
     }
 }

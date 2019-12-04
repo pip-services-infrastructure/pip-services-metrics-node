@@ -1,7 +1,6 @@
+export { MetricRecord } from './MetricRecord';
+export { MetricRecordValue } from './MetricRecordValue';
 export { IMetricsPersistence } from './IMetricsPersistence';
-export { MetricRecordIdComposer } from './MetricRecordIdComposer';
+export { MetricsMemoryPersistence } from './MetricsMemoryPersistence';
 export { MetricsFilePersistence } from './MetricsFilePersistence';
-export { TimeRangeComposer } from './TimeRangeComposer';
-export { TimeParser } from './TimeParser';
-export { TimeIndexComposer } from './TimeIndexComposer';
-export { TimeHorizonConverter } from './TimeHorizonConverter';
+export { MetricsMongoDbPersistence } from './MetricsMongoDbPersistence';

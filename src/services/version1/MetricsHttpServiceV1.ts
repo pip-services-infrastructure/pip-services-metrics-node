@@ -1,5 +1,5 @@
-﻿import { CommandableHttpService } from 'pip-services3-rpc-node';
-import { Descriptor } from 'pip-services3-commons-node';
+﻿import { Descriptor } from 'pip-services3-commons-node';
+import { CommandableHttpService } from 'pip-services3-rpc-node';
 
 export class MetricsHttpServiceV1 extends CommandableHttpService {
     public constructor() {

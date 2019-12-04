@@ -1,9 +1,9 @@
 
-export enum TimeHorizonV1 {
-    Total = 0,
-    Year = 1,
-    Month = 2,
-    Day = 3,
-    Hour = 4,
-    Minute = 5
+export class TimeHorizonV1 {
+    public static Total: number = 0;
+    public static Year: number = 1;
+    public static Month: number = 2;
+    public static Day: number = 3;
+    public static Hour: number = 4;
+    public static Minute: number = 5;
 }

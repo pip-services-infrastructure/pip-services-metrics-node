@@ -1,6 +1,6 @@
-﻿
-import { Factory } from 'pip-services3-components-node';
+﻿import { Factory } from 'pip-services3-components-node';
 import { Descriptor } from 'pip-services3-commons-node';
+
 import { MetricsMemoryPersistence } from '../persistence/MetricsMemoryPersistence';
 import { MetricsFilePersistence } from '../persistence/MetricsFilePersistence';
 import { MetricsMongoDbPersistence } from '../persistence/MetricsMongoDbPersistence';

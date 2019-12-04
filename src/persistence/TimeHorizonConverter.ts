@@ -1,14 +1,16 @@
-﻿
-let _ = require('lodash');
-import { TimeHorizonV1 } from '../data/version1';
+﻿let _ = require('lodash');
+
 import { IntegerConverter } from 'pip-services3-commons-node';
 
+import { TimeHorizonV1 } from '../data/version1/TimeHorizonV1';
+
 export class TimeHorizonConverter {
-    public static fromString(value: string): TimeHorizonV1 {
+
+    public static fromString(value: string): number {
         if (value == null || value == '')
             return TimeHorizonV1.Total;
 
-        value = value.toLowerCase();//toLowerInvariant();
+        value = value.toLowerCase();
 
         if (value == "total")
             return TimeHorizonV1.Total;
@@ -21,7 +23,8 @@ export class TimeHorizonConverter {
         if (value == "hour" || value == "hourly")
             return TimeHorizonV1.Hour;
 
-        var code: TimeHorizonV1 = IntegerConverter.toIntegerWithDefault(value, TimeHorizonV1.Total);
+        let code = IntegerConverter.toIntegerWithDefault(value, TimeHorizonV1.Total);
         return code;
     }
+
 }

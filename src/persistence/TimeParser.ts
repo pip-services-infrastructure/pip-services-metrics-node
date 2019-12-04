@@ -1,9 +1,10 @@
-﻿import { TimeHorizonV1 } from '../data/version1';
+﻿import { IntegerConverter } from 'pip-services3-commons-node';
+
+import { TimeHorizonV1 } from '../data/version1';
 import { MetricValueV1 } from '../data/version1';
-import { IntegerConverter } from 'pip-services3-commons-node';
 
 export class TimeParser {
-    public static parseTime(token: string, timeHorizon: TimeHorizonV1, value: MetricValueV1) {
+    public static parseTime(token: string, timeHorizon: number, value: MetricValueV1) {
         if (timeHorizon == TimeHorizonV1.Total) {
             return;
         }

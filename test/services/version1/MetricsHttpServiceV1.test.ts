@@ -12,7 +12,10 @@ import { PagingParams } from 'pip-services3-commons-node';
 import { MetricsMemoryPersistence } from '../../../src/persistence/MetricsMemoryPersistence';
 import { MetricsController } from '../../../src/logic/MetricsController';
 import { MetricsHttpServiceV1 } from '../../../src/services/version1/MetricsHttpServiceV1';
-import { MetricDefinitionV1, TimeHorizonV1, MetricUpdateV1, MetricValueSetV1 } from '../../../src';
+import { MetricDefinitionV1 } from '../../../src/data/version1/MetricDefinitionV1';
+import { TimeHorizonV1 } from '../../../src/data/version1/TimeHorizonV1';
+import { MetricUpdateV1 } from '../../../src/data/version1/MetricUpdateV1';
+import { MetricValueSetV1 } from '../../../src/data/version1/MetricValueSetV1';
 
 
 suite('MetricsHttpServiceV1', () => {
@@ -69,53 +72,52 @@ suite('MetricsHttpServiceV1', () => {
         async.series([
             // Update metric once
             (callback) => {
-                let metric1 = new MetricUpdateV1();
-
-                metric1.name = "metric1";
-                metric1.dimension1 = "A";
-                metric1.dimension2 = "B";
-                metric1.dimension3 = null;
-                metric1.year = 2018;
-                metric1.month = 8;
-                metric1.day = 26;
-                metric1.hour = 12;
-                metric1.value = 123;
-
                 rest.post('/v1/metrics/update_metric',
                     {
-                        update: metric1,
+                        update: <MetricUpdateV1> {
+                            name: "metric1",
+                            dimension1: "A",
+                            dimension2: "B",
+                            dimension3: null,
+                            year: 2018,
+                            month: 8,
+                            day: 26,
+                            hour: 12,
+                            value: 123    
+                        },
                         max_time_horizon: TimeHorizonV1.Hour
-                    }, (err, req, res) => {
-
-                    });
-
-                // Update metric second time
-                let metric2 = new MetricUpdateV1();
-
-                metric2.name = "metric1";
-                metric2.dimension1 = "A";
-                metric2.dimension2 = "B";
-                metric2.dimension3 = null;
-                metric2.year = 2018;
-                metric2.month = 8;
-                metric2.day = 26;
-                metric2.hour = 13;
-                metric2.value = 321;
-
-                let metricsUpdate = new Array<MetricUpdateV1>();
-                metricsUpdate.push(metric2);
-
+                    },
+                    (err, req, res) => {
+                        callback(err);
+                    }
+                );
+            },
+            // Update metric second time
+            (callback) => {
                 rest.post('/v1/metrics/update_metrics',
                     {
-                        updates: metricsUpdate,
+                        updates: [
+                            <MetricUpdateV1> {
+                                name: "metric1",
+                                dimension1: "A",
+                                dimension2: "B",
+                                dimension3: null,
+                                year: 2018,
+                                month: 8,
+                                day: 26,
+                                hour: 13,
+                                value: 321
+                            }                    
+                        ],
                         max_time_horizon: TimeHorizonV1.Hour
-                    }, (err, req, res) => {
-
-                    });
-                callback();
+                    }, 
+                    (err, req, res) => {
+                        callback(err);
+                    }
+                );
             },
+            // Get total metric
             (callback) => {
-                // Get total metric
                 rest.post('/v1/metrics/get_metrics_by_filter',
                     {
                         filter: FilterParams.fromTuples("name", "metric1"),
@@ -127,7 +129,7 @@ suite('MetricsHttpServiceV1', () => {
                         let set: MetricValueSetV1;
                         set = page.data[0];
                         assert.equal("metric1", set.name);
-                        assert.equal(TimeHorizonV1.Total, set.timeHorizon);
+                        assert.equal(TimeHorizonV1.Total, set.time_horizon);
                         assert.equal("A", set.dimension1);
                         assert.equal("B", set.dimension2);
                         assert.isNull(set.dimension3);
@@ -140,10 +142,8 @@ suite('MetricsHttpServiceV1', () => {
                         callback();
                     });
             },
+            // Get hour metric
             (callback) => {
-                // Get hour metric
-                let set: MetricValueSetV1;
-
                 rest.post('/v1/metrics/get_metrics_by_filter',
                     {
                         filter: FilterParams.fromTuples(
@@ -159,12 +159,12 @@ suite('MetricsHttpServiceV1', () => {
                             "to_hour", 23
                         ),
                         paging: new PagingParams()
-                    }, (err, req, res, page) => {
-
+                    }, 
+                    (err, req, res, page) => {
                         assert.equal(1, page.data.length);
-                        set = page.data[0];
+                        let set = page.data[0];
                         assert.equal("metric1", set.name);
-                        assert.equal(TimeHorizonV1.Hour, set.timeHorizon);
+                        assert.equal(TimeHorizonV1.Hour, set.time_horizon);
                         assert.equal("A", set.dimension1);
                         assert.equal("B", set.dimension2);
                         assert.isNull(set.dimension3);
@@ -190,14 +190,13 @@ suite('MetricsHttpServiceV1', () => {
                         assert.equal(321, value.max);
                         assert.equal(1, value.count);
                         callback();
-                    });
+                    }
+                );
             }
-
         ], done);
     });
 
     test('TestDefinitions', (done) => {
-
         async.series([
             // Update metric once
             (callback) => {
@@ -233,14 +232,35 @@ suite('MetricsHttpServiceV1', () => {
 
                 rest.post('/v1/metrics/update_metrics',
                     {
-                        updates: updateMetrics,
+                        updates: [
+                            <MetricUpdateV1> {
+                                name: "metric2",
+                                dimension1: "A",
+                                dimension2: "B",
+                                dimension3: null,
+                                year: 2018,
+                                month: 8,
+                                day: 26,
+                                hour: 12,
+                                value: 123    
+                            },
+                            <MetricUpdateV1> {
+                                name: "metric2",
+                                dimension1: "A",
+                                dimension2: "C",
+                                dimension3: null,
+                                year: 2018,
+                                month: 8,
+                                day: 26,
+                                hour: 13,
+                                value: 321
+                            }                    
+                        ],
                         max_time_horizon: TimeHorizonV1.Hour
                     }, (err, req, res) => {
-
+                        callback(err);
                     }
-
                 );
-                callback();
             },
             (callback) => {
                 // Get all definitions

@@ -4,9 +4,11 @@ import { MetricUpdateV1 } from '../data/version1';
 import { TimeRangeComposer } from './TimeRangeComposer';
 
 export class MetricRecordIdComposer {
-    private static composeTime(timeHorizon: TimeHorizonV1,
+
+    private static composeTime(timeHorizon: number,
         year: number, month: number, day: number, hour: number, minute: number): string {
-        var range = TimeRangeComposer.composeRange(timeHorizon, year, month, day, hour, minute);
+
+        let range = TimeRangeComposer.composeRange(timeHorizon, year, month, day, hour, minute);
         switch (timeHorizon) {
             case TimeHorizonV1.Total:
                 return "T";
@@ -24,17 +26,17 @@ export class MetricRecordIdComposer {
         return "X";
     }
 
-    public static composeId(name: string, timeHorizon: TimeHorizonV1,
+    public static composeId(name: string, timeHorizon: number,
         dimension1: string, dimension2: string, dimension3: string,
         year: number, month: number, day: number, hour: number, minute: number): string {
         return name
             + "_" + this.composeTime(timeHorizon, year, month, day, hour, minute)
-            + "_" + dimension1
-            + "_" + dimension2
-            + "_" + dimension3;
+            + "_" + (dimension1 || "")
+            + "_" + (dimension2 || "")
+            + "_" + (dimension3 || "");
     }
 
-    public static composeIdFromUpdate(timeHorizon: TimeHorizonV1, update: MetricUpdateV1): string {
+    public static composeIdFromUpdate(timeHorizon: number, update: MetricUpdateV1): string {
         return this.composeId(update.name, timeHorizon,
             update.dimension1, update.dimension2, update.dimension3,
             update.year, update.month, update.day, update.hour, update.minute);

@@ -1,24 +1,27 @@
-﻿var _ = require('lodash');
-import { IdentifiableMongoDbPersistence } from 'pip-services3-mongodb-node';
-import { MetricRecordV1 } from '../data/version1';
-import { IMetricsPersistence } from './IMetricsPersistence';
-import { TimeHorizonV1 } from '../data/version1';
-import { ConfigParams, MapConverter } from 'pip-services3-commons-node';
+﻿let _ = require('lodash');
+let async = require('async');
+
+import { ConfigParams } from 'pip-services3-commons-node';
 import { FilterParams } from 'pip-services3-commons-node';
+import { PagingParams } from 'pip-services3-commons-node';
+import { DataPage } from 'pip-services3-commons-node';
+import { IdentifiableMongoDbPersistence } from 'pip-services3-mongodb-node';
+
+import { MetricUpdateV1 } from '../data/version1/MetricUpdateV1';
+import { TimeHorizonV1 } from '../data/version1/TimeHorizonV1';
+
+import { MetricRecord } from './MetricRecord';
+import { IMetricsPersistence } from './IMetricsPersistence';
 import { TimeHorizonConverter } from './TimeHorizonConverter';
 import { TimeRangeComposer } from './TimeRangeComposer';
-import { DataPage } from 'pip-services3-commons-node';
-import { MetricsMongoDbSchema } from './MetricsMongoDbSchema';
-import { PagingParams } from 'pip-services3-commons-node';
-import { MetricUpdateV1 } from '../data/version1';
 import { MetricRecordIdComposer } from './MetricRecordIdComposer';
 import { TimeIndexComposer } from './TimeIndexComposer';
-import { MetricRecordValueV1 } from '../data/version1/MetricRecordValueV1';
-
+import { MetricRecordValue } from './MetricRecordValue';
 
 export class MetricsMongoDbPersistence
-    extends IdentifiableMongoDbPersistence<MetricRecordV1, string>
+    extends IdentifiableMongoDbPersistence<MetricRecord, string>
     implements IMetricsPersistence {
+
     private readonly TimeHorizons = [
         TimeHorizonV1.Total,
         TimeHorizonV1.Year,
@@ -31,7 +34,6 @@ export class MetricsMongoDbPersistence
     protected _maxPageSize: number = 100;
 
     constructor() {
-        //super('metrics', MetricsMongoDbSchema());
         super('metrics');
     }
 
@@ -45,9 +47,6 @@ export class MetricsMongoDbPersistence
         filterParams = filterParams || new FilterParams();
 
         let criteria = [];
-        let id = filterParams.getAsNullableString('id');
-        if (id != null)
-            criteria.push({ _id: id });
 
         let name = filterParams.getAsNullableString("name");
         if (name != null) {
@@ -61,54 +60,56 @@ export class MetricsMongoDbPersistence
             criteria.push({ name: { $in: names } });
 
         let timeHorizon = TimeHorizonConverter.fromString(filterParams.getAsNullableString("time_horizon"));
-        criteria.push({ timeHorizon: timeHorizon });
+        criteria.push({ th: timeHorizon });
 
         let fromRange = TimeRangeComposer.composeFromRangeFromFilter(timeHorizon, filterParams);
         if (fromRange != TimeHorizonV1.Total) {
-            criteria.push({ range: { $gte: fromRange } });
+            criteria.push({ rng: { $gte: fromRange } });
         }
         let toRange = TimeRangeComposer.composeToRangeFromFilter(timeHorizon, filterParams);
         if (toRange != TimeHorizonV1.Total) {
-            criteria.push({ range: { $lte: toRange } });
+            criteria.push({ rng: { $lte: toRange } });
         }
         let dimension1 = filterParams.getAsNullableString("dimension1");
         if (dimension1 != null && dimension1 != "*") {
-            criteria.push({ dimension1: dimension1 });
+            criteria.push({ d1: dimension1 });
         }
 
         let dimension2 = filterParams.getAsNullableString("dimension2");
         if (dimension2 != null && dimension2 != "*") {
-            criteria.push({ dimension2: dimension2 });
+            criteria.push({ d2: dimension2 });
         }
 
         let dimension3 = filterParams.getAsNullableString("dimension3");
         if (dimension3 != null && dimension3 != "*") {
-            criteria.push({ dimension3: dimension3 });
+            criteria.push({ d3: dimension3 });
         }
 
         return criteria.length > 0 ? { $and: criteria } : null;
     }
 
     public getPageByFilter(correlationId: string, filter: FilterParams, paging: PagingParams,
-        callback: (err: any, page: DataPage<MetricRecordV1>) => void): void {
-        super.getPageByFilter(correlationId, this.composeFilter(filter), paging, null, null, callback);
+        callback: (err: any, page: DataPage<MetricRecord>) => void): void {
+        super.getPageByFilter(correlationId, this.composeFilter(filter), paging, "name,rng,d1,d2,d3", null, callback);
     }
 
-    public updateOne(correlationId: string, update: MetricUpdateV1, maxTimeHorizon: TimeHorizonV1) {
-        let updates = new Array<MetricUpdateV1>();
-        updates.push(update);
-        this.updateMany(correlationId, updates, maxTimeHorizon);
-        this._logger.trace(correlationId, 'Updated metric');
+    public updateOne(correlationId: string, update: MetricUpdateV1, maxTimeHorizon: TimeHorizonV1,
+        callback?: (err: any) => void) {
+        this.updateMany(correlationId, [update], maxTimeHorizon, callback);
     }
 
-    public updateMany(correlationId: string, updates: Array<MetricUpdateV1>, maxTimeHorizon: TimeHorizonV1) {
-
+    public updateMany(correlationId: string, updates: MetricUpdateV1[],
+        maxTimeHorizon: TimeHorizonV1, callback?: (err: any) => void): void {
         let batch = this._collection.initializeUnorderedBulkOp();
         let opCounter = 0;
 
-        for (let update of updates) {
-            for (let timeHorizon of this.TimeHorizons) {
-                if (timeHorizon <= maxTimeHorizon) {
+        async.each(
+            updates, 
+            (update, callback) => {
+                for (let timeHorizon of this.TimeHorizons) {
+                    if (timeHorizon > maxTimeHorizon)
+                        continue;
+
                     let id = MetricRecordIdComposer.composeIdFromUpdate(timeHorizon, update);
                     let range = TimeRangeComposer.composeRangeFromUpdate(timeHorizon, update);
                     let timeIndex = TimeIndexComposer.composeIndexFromUpdate(timeHorizon, update);
@@ -121,51 +122,55 @@ export class MetricsMongoDbPersistence
                         .updateOne({
                             $setOnInsert: {
                                 name: update.name,
-                                timeHorizon: timeHorizon,
-                                range: range,
-                                dimension1: update.dimension1,
-                                dimension2: update.dimension2,
-                                dimension3: update.dimension3
+                                th: timeHorizon,
+                                rng: range,
+                                d1: update.dimension1,
+                                d2: update.dimension2,
+                                d3: update.dimension3
                             },
                             $inc: {
-                                ["values." + timeIndex + ".count"]: 1,
-                                ["values." + timeIndex + ".sum"]: update.value
+                                ["val." + timeIndex + ".cnt"]: 1,
+                                ["val." + timeIndex + ".sum"]: update.value
                             },
-                            $min: { ["values." + timeIndex + ".min"]: update.value },
-                            $max: { ["values." + timeIndex + ".max"]: update.value }
-                        });
+                            $min: { ["val." + timeIndex + ".min"]: update.value },
+                            $max: { ["val." + timeIndex + ".max"]: update.value }
+                        });    
+                }
 
-                    if (opCounter >= 200) {
-                        opCounter = 0;
-                        batch.execute((err) => {
-                            if (err != null) {
-                                this._logger.error(correlationId, err, 'METRIC SET ERR', 'Metric update error');
-                            }
-                        })
-                    }
+                if (opCounter >= 200) {
+                    batch.execute((err) => {
+                        if (err == null) {
+                            opCounter = 0;
+                            batch = this._collection.initializeUnorderedBulkOp();                       
+                        }
+                        callback(err); 
+                    });
+                } else {
+                    callback(null);
+                }
+            },
+            (err) => {
+                if (err) {
+                    callback(err);
+                    null;
+                }
 
+                if (opCounter >= 0) {
+                    batch.execute((err) => {
+                        if (err == null) {
+                            this._logger.trace(correlationId, 'Updated $n metrics', updates.length);
+                        }
+                        if (callback) callback(err);
+                    });
+                } else {
+                    if (callback) callback(null);
                 }
             }
-            if (opCounter >= 0) {
-                batch.execute((err) => {
-                    if (err != null) {
-                        this._logger.error(correlationId, err, 'METRIC SET ERR', 'Metric update error');
-                    }
-                })
-            }
-        }
-
-        this._logger.trace(correlationId, 'Updated $n metrics', updates.length);
+        );
     }
 
     public deleteByFilter(correlationId: string, filter: FilterParams, callback?: (err: any) => void) {
-        super.deleteByFilter(correlationId, this.composeFilter(filter), (err: any) => {
-            if (err == null) {
-                this._logger.trace(correlationId, "Deleted metrics");
-            }
-            callback(err);
-        });
-
+        super.deleteByFilter(correlationId, this.composeFilter(filter), callback);
     }
 
 }

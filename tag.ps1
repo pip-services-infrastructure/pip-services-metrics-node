@@ -7,20 +7,19 @@ $ErrorActionPreference = "Stop"
 $component = Get-Content -Path "component.json" | ConvertFrom-Json
 $tag="v$($component.version)-$($component.build)"
 
-# Define group name
-$pos = $component.registry.IndexOf("/")
-$groupName = ""
-if ($pos -gt 0) {
-    $groupName = $component.registry.Substring($pos + 1, $component.registry.Length - $pos - 1)
-}
+# Configure git
+if ($env:GIT_USER -ne $null -and $env:GIT_EMAIL -ne $null) {
+    git config --global user.name $env:GIT_USER
+    git config --global user.email $env:GIT_EMAIL
 
-# Change git remote so git use ssh on push
-git remote set-url origin git@gitlab.com:$groupName/$($component.name).git
+    git remote rm origin 
+    git remote add origin "https://$($env:GIT_USER):$($env:GITHUB_API_KEY)@github.com/pip-services-infrastructure/$($component.name).git"
+}
 
 git add ./obj/*
 git add ./component.json
-git commit -m "project build by GitLab CI [skip ci]"
+git commit -m "project build by Travis CI [skip ci]"
 
 # Set git tag
-git tag $tag -a -m "Generated tag from GitLabCI for build #$($component.build) [ci skip]"
+git tag $tag -a -m "Generated tag from GitLabCI for build #$($component.build)"
 git push --tags origin HEAD:master 
