@@ -1,33 +1,25 @@
-// import { BenchmarkSuite, Parameter } from 'pip-benchmark-node';
-// import { ConfigParams, DateTimeConverter, RandomInteger, RandomFloat, RandomArray, RandomBoolean, FilterParams, PagingParams } from 'pip-services3-commons-node';
-// import { IMetricsClientV1 } from '../src/clients/version1/IMetricsClientV1';
-// import { MetricsHttpClientV1 } from '../src/clients/version1/MetricsHttpClientV1';
-// import { Affiliates } from './Affiliates';
-// import { Msos } from './Msos';
-// import { Requests } from './Requests';
-// import { Responses } from './Responses';
-// import { Services } from './Services';
-// import { Errors } from './Errors';
-// import { StatusCodes } from './StatusCodes';
-// import { MetricUpdateV1 } from '../src/data/version1/MetricUpdateV1';
-// import { TimeHorizonV1 } from '../src';
-// import { Metrics } from './Metrics';
-// import { TimeHorizons } from './TimeHorizons';
-// import { Reference } from './Reference';
-// import { MetricsBenchmark } from './MetricsBenchmark';
-// let async = require('async');
-// export class MetricsBenchmarkSuite extends BenchmarkSuite {
-//     public constructor() {
-//         super("Metrics.Client", "Measures performance of Metrics client")
-//         this.addParameter(new Parameter("Initialize", "Initialize database", "false"));
-//         this.addParameter(new Parameter("StartTime", "Initialization start time", "2017-01-01T00:00:00Z"));
-//         this.addParameter(new Parameter("EndTime", "Initialization end time", "2018-09-01T00:00:00Z"));
-//         this.addParameter(new Parameter("ConnectionProtocol", "Connection protocol", "http"));
-//         this.addParameter(new Parameter("ConnectionHost", "Connection service host", "localhost"));
-//         this.addParameter(new Parameter("ConnectionPort", "Connection service port", "8080"));
-//         //this.createBenchmark("UpdateMetric", "Measures performance of updating metrics", this.BenchmarkUpdateMetric);
-//         this.addBenchmark(new MetricsBenchmark());
-//         //this.createBenchmark("ReadMultipleMetrics", "Measures performance of reading metric with multiple dimensions", this.BenchmarkReadMultipleMetrics);
-//     }
-// }
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const pip_benchmark_node_1 = require("pip-benchmark-node");
+const pip_benchmark_node_2 = require("pip-benchmark-node");
+const UpdateMetricsBenchmark_1 = require("./UpdateMetricsBenchmark");
+class MetricsBenchmarkSuite extends pip_benchmark_node_1.BenchmarkSuite {
+    constructor() {
+        super("Metrics", "Measures performance of Metrics components");
+        this.addParameter(new pip_benchmark_node_2.Parameter('InitialRecordNumber', 'Number of records at start', '0'));
+        this.addParameter(new pip_benchmark_node_2.Parameter('MetricNumber', 'Number of metrics', '100'));
+        this.addParameter(new pip_benchmark_node_2.Parameter('DimensionNumber', 'Number of dimensions', '10'));
+        this.addParameter(new pip_benchmark_node_2.Parameter('UpdateNumber', 'Number of updates', '10'));
+        this.addParameter(new pip_benchmark_node_2.Parameter('MaxTimeHorizon', 'Maximum time horizon', '4'));
+        this.addParameter(new pip_benchmark_node_2.Parameter('StartTime', 'Simulation start time', '2016-01-01T00:00:00.000Z'));
+        this.addParameter(new pip_benchmark_node_2.Parameter('MongoUri', 'MongoDB URI', null));
+        this.addParameter(new pip_benchmark_node_2.Parameter('MongoHost', 'MongoDB Hostname', 'localhost'));
+        this.addParameter(new pip_benchmark_node_2.Parameter('MongoPort', 'MongoDB Port', '27017'));
+        this.addParameter(new pip_benchmark_node_2.Parameter('MongoDb', 'MongoDB Database', 'benchmark'));
+        //this.createBenchmark("UpdateMetric", "Measures performance of updating metrics", this.BenchmarkUpdateMetric);
+        this.addBenchmark(new UpdateMetricsBenchmark_1.UpdateMetricsBenchmark());
+        //this.createBenchmark("ReadMultipleMetrics", "Measures performance of reading metric with multiple dimensions", this.BenchmarkReadMultipleMetrics);
+    }
+}
+exports.MetricsBenchmarkSuite = MetricsBenchmarkSuite;
 //# sourceMappingURL=MetricsBenchmarkSuite.js.map
