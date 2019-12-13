@@ -54,6 +54,6 @@
         "chai": "*",
         "mocha": "*",
         "restify": "^4.3.0",
-        "pip-benchmark-node": "https://github.com/pip-benchmark/pip-benchmark-node.git"
+        "pip-benchmark-node": "^2.0.1"
     }
 }
