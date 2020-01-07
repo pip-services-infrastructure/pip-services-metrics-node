@@ -21,6 +21,10 @@ class MetricsMongoDbPersistence extends pip_services3_mongodb_node_1.Identifiabl
             TimeHorizonV1_1.TimeHorizonV1.Minute
         ];
         this._maxPageSize = 100;
+        super.ensureIndex({ name: 1, th: 1, rng: -1 });
+        super.ensureIndex({ d1: 1 });
+        super.ensureIndex({ d2: 1 });
+        super.ensureIndex({ d3: 1 });
     }
     configure(config) {
         super.configure(config);
@@ -120,7 +124,7 @@ class MetricsMongoDbPersistence extends pip_services3_mongodb_node_1.Identifiabl
             if (opCounter >= 0) {
                 batch.execute((err) => {
                     if (err == null) {
-                        this._logger.trace(correlationId, 'Updated $n metrics', updates.length);
+                        this._logger.trace(correlationId, 'Updated %d metrics', updates.length);
                     }
                     if (callback)
                         callback(err);

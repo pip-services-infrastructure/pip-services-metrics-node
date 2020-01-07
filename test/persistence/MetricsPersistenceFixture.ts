@@ -344,6 +344,10 @@ export class MetricsPersistenceFixture {
                 callback(null);
             },
             (callback) => {
+                // Delay, because update many can be async
+                setTimeout(callback, 1000);
+            },
+            (callback) => {
                 // Get total metric
                 this._persistence.getPageByFilter(
                     null,

@@ -35,6 +35,10 @@ export class MetricsMongoDbPersistence
 
     constructor() {
         super('metrics');
+        super.ensureIndex({ name: 1, th: 1, rng: -1 });
+        super.ensureIndex({ d1: 1 });
+        super.ensureIndex({ d2: 1 });
+        super.ensureIndex({ d3: 1 });
     }
 
     public configure(config: ConfigParams) {
@@ -158,7 +162,7 @@ export class MetricsMongoDbPersistence
                 if (opCounter >= 0) {
                     batch.execute((err) => {
                         if (err == null) {
-                            this._logger.trace(correlationId, 'Updated $n metrics', updates.length);
+                            this._logger.trace(correlationId, 'Updated %d metrics', updates.length);
                         }
                         if (callback) callback(err);
                     });
