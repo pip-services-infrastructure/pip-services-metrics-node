@@ -1,4 +1,4 @@
-# <img src="https://github.com/pip-services/pip-services/raw/master/design/Logo.png" alt="Pip.Services Logo" style="max-width:30%"> <br/> Clusters microservice
+# <img src="https://github.com/pip-services/pip-services/raw/master/design/Logo.png" alt="Pip.Services Logo" style="max-width:30%"> <br/> Metrics microservice
 
 This is the metrics microservice. It keeps list of metrics.
 
@@ -31,7 +31,7 @@ This microservice has no dependencies on other microservices.
   - [HTTP Version 1](doc/HttpProtocolV1.md)
 ##  Contract
 
-Logical contract of the microservice is presented below. For physical implementation (HTTP/REST, Thrift, Seneca, Lambda, etc.),
+Logical contract of the microservice is presented below. For physical implementation (HTTP/REST, GRPC, Lambda, etc.),
 please, refer to documentation of the specific protocol.
 
 ```typescript
