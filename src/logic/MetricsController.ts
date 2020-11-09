@@ -161,7 +161,7 @@ export class MetricsController
 
                 for (let key in record.val) {
                     if (key < fromIndex || key > toIndex)
-                        return;
+                        continue;
 
                     let value = new MetricValueV1();
                     TimeParser.parseTime(key, timeHorizon, value);

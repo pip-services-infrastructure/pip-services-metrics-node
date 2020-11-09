@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.MetricRecord = exports.MetricRecordValueMap = void 0;
 class MetricRecordValueMap {
 }
 exports.MetricRecordValueMap = MetricRecordValueMap;

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.TimeRangeComposer = void 0;
 const TimeHorizonV1_1 = require("../data/version1/TimeHorizonV1");
 class TimeRangeComposer {
     static composeRange(timeHorizon, year, month, day, hour, minute) {

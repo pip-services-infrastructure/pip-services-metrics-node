@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.MetricRecordIdComposer = void 0;
 const version1_1 = require("../data/version1");
 const TimeRangeComposer_1 = require("./TimeRangeComposer");
 class MetricRecordIdComposer {

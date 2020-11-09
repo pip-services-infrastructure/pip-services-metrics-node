@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.TimeHorizonConverter = void 0;
 let _ = require('lodash');
 const pip_services3_commons_node_1 = require("pip-services3-commons-node");
 const TimeHorizonV1_1 = require("../data/version1/TimeHorizonV1");

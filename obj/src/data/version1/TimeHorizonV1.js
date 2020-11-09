@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.TimeHorizonV1 = void 0;
 class TimeHorizonV1 {
 }
 exports.TimeHorizonV1 = TimeHorizonV1;

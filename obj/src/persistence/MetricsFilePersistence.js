@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.MetricsFilePersistence = void 0;
 const pip_services3_data_node_1 = require("pip-services3-data-node");
 const MetricsMemoryPersistence_1 = require("./MetricsMemoryPersistence");
 class MetricsFilePersistence extends MetricsMemoryPersistence_1.MetricsMemoryPersistence {

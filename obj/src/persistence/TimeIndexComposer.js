@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.TimeIndexComposer = void 0;
 const version1_1 = require("../data/version1");
 class TimeIndexComposer {
     static composeIndex(timeHorizon, year, month, day, hour, minute) {

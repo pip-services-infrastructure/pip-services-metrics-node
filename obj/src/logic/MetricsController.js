@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.MetricsController = void 0;
 let _ = require('lodash');
 let async = require('async');
 const pip_services3_commons_node_1 = require("pip-services3-commons-node");
@@ -109,7 +110,7 @@ class MetricsController {
                 }
                 for (let key in record.val) {
                     if (key < fromIndex || key > toIndex)
-                        return;
+                        continue;
                     let value = new MetricValueV1_1.MetricValueV1();
                     TimeParser_1.TimeParser.parseTime(key, timeHorizon, value);
                     value.count = record.val[key].cnt;
