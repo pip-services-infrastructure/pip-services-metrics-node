@@ -1,6 +1,6 @@
 {
     "name": "pip-services-metrics-node",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "registry": "pipdevs",
     "build": 0
 }
