@@ -56,6 +56,25 @@ export class MetricsPersistenceFixture {
                 );
             },
             (callback) => {
+                // Update metric second time
+                this._persistence.updateMany(
+                    null,
+                    [                   
+                        <MetricUpdateV1>
+                        {
+                            name: "metric2",
+                            year: 2018,
+                            month: 2,
+                            day: 26,
+                            hour: 13,
+                            value: 1
+                        }
+                    ],
+                    TimeHorizonV1.Hour,
+                    callback
+                );
+            },
+            (callback) => {
                 // Get total metric
                 this._persistence.getPageByFilter(
                     null,
@@ -68,10 +87,10 @@ export class MetricsPersistenceFixture {
                         assert.isNotNull(page);
                         assert.equal(1, page.data.length); 
                         let record = page.data[0];
-                        assert.equal(444, record.val["total"].sum);
-                        assert.equal(123, record.val["total"].min);
+                        assert.equal(445, record.val["total"].sum);
+                        assert.equal(1, record.val["total"].min);
                         assert.equal(321, record.val["total"].max);
-                        assert.equal(2, record.val["total"].cnt);
+                        assert.equal(3, record.val["total"].cnt);
                         callback(err);
                     }
                 );
@@ -88,10 +107,10 @@ export class MetricsPersistenceFixture {
                     ),
                     new PagingParams(), (err, page) => {
                         let record = page.data[0];
-                        assert.equal(444, record.val["2018"].sum);
-                        assert.equal(123, record.val["2018"].min);
+                        assert.equal(445, record.val["2018"].sum);
+                        assert.equal(1, record.val["2018"].min);
                         assert.equal(321, record.val["2018"].max);
-                        assert.equal(2, record.val["2018"].cnt);
+                        assert.equal(3, record.val["2018"].cnt);
                         callback(err);
                     }
                 );
@@ -104,14 +123,19 @@ export class MetricsPersistenceFixture {
                         "name", "metric2",
                         "time_horizon", "month",
                         "from_year", 2018,
-                        "from_month", 8,
+                        "from_month", 1,
                         "to_year", 2018,
-                        "to_month", 8
+                        "to_month", 12
                     ),
                     new PagingParams(),
                     (err, page) => {
                         assert.equal(1, page.data.length);
                         let record = page.data[0];
+                        assert.equal(1, record.val["201802"].sum);
+                        assert.equal(1, record.val["201802"].min);
+                        assert.equal(1, record.val["201802"].max);
+                        assert.equal(1, record.val["201802"].cnt);
+
                         assert.equal(444, record.val["201808"].sum);
                         assert.equal(123, record.val["201808"].min);
                         assert.equal(321, record.val["201808"].max);
@@ -128,15 +152,20 @@ export class MetricsPersistenceFixture {
                         "name", "metric2",
                         "time_horizon", "day",
                         "from_year", 2018,
-                        "from_month", 8,
+                        "from_month", 1,
                         "from_day", 26,
                         "to_year", 2018,
-                        "to_month", 8,
+                        "to_month", 12,
                         "to_day", 26
                     ),
                     new PagingParams, (err, page) => {
                         assert.equal(1, page.data.length);
                         let record = page.data[0];
+                        assert.equal(1, record.val["20180226"].sum);
+                        assert.equal(1, record.val["20180226"].min);
+                        assert.equal(1, record.val["20180226"].max);
+                        assert.equal(1, record.val["20180226"].cnt);
+
                         assert.equal(444, record.val["20180826"].sum);
                         assert.equal(123, record.val["20180826"].min);
                         assert.equal(321, record.val["20180826"].max);
@@ -153,16 +182,16 @@ export class MetricsPersistenceFixture {
                         "name", "metric2",
                         "time_horizon", "hour",
                         "from_year", 2018,
-                        "from_month", 8,
+                        "from_month", 1,
                         "from_day", 26,
                         "from_hour", 0,
                         "to_year", 2018,
-                        "to_month", 8,
+                        "to_month", 12,
                         "to_day", 26,
                         "to_hour", 23
                     ),
                     new PagingParams, (err, page) => {
-                        assert.equal(1, page.data.length);
+                        assert.equal(2, page.data.length);
                         let record = page.data[0];
                         assert.equal(123, record.val["2018082612"].sum);
                         assert.equal(123, record.val["2018082612"].min);
@@ -173,6 +202,46 @@ export class MetricsPersistenceFixture {
                         assert.equal(321, record.val["2018082613"].min);
                         assert.equal(321, record.val["2018082613"].max);
                         assert.equal(1, record.val["2018082613"].cnt);
+
+                        record = page.data[1];
+                        assert.equal(1, record.val["2018022613"].sum);
+                        assert.equal(1, record.val["2018022613"].min);
+                        assert.equal(1, record.val["2018022613"].max);
+                        assert.equal(1, record.val["2018022613"].cnt);
+
+                        callback(err);
+                    }
+                );
+            },
+            (callback) => {
+                // Get hour metric
+                this._persistence.getPageByFilter(
+                    null,
+                    FilterParams.fromTuples(
+                        "name", "metric2",
+                        "time_horizon", "hour",
+                        "from_time", "2018-01-26T00:00:00Z",
+                        "to_time", "2018-12-26T23:00:00Z"
+                    ),
+                    new PagingParams, (err, page) => {
+                        assert.equal(2, page.data.length);
+                        let record = page.data[0];
+                        assert.equal(123, record.val["2018082612"].sum);
+                        assert.equal(123, record.val["2018082612"].min);
+                        assert.equal(123, record.val["2018082612"].max);
+                        assert.equal(1, record.val["2018082612"].cnt);
+
+                        assert.equal(321, record.val["2018082613"].sum);
+                        assert.equal(321, record.val["2018082613"].min);
+                        assert.equal(321, record.val["2018082613"].max);
+                        assert.equal(1, record.val["2018082613"].cnt);
+
+                        record = page.data[1];
+                        assert.equal(1, record.val["2018022613"].sum);
+                        assert.equal(1, record.val["2018022613"].min);
+                        assert.equal(1, record.val["2018022613"].max);
+                        assert.equal(1, record.val["2018022613"].cnt);
+
                         callback(err);
                     }
                 );

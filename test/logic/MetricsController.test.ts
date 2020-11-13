@@ -82,6 +82,27 @@ suite('MetricsControllerTest', () => {
                     callback
                 );
             },
+            // Update metric third time
+            (callback) => {
+                controller.updateMetrics(
+                    null,
+                    [
+                        <MetricUpdateV1> {
+                            name: "metric1",
+                            dimension1: "A",
+                            dimension2: "B",
+                            dimension3: null,
+                            year: 2018,
+                            month: 11,
+                            day: 26,
+                            hour: 13,
+                            value: 1
+                        }        
+                    ],
+                    TimeHorizonV1.Hour,
+                    callback
+                );
+            },
             // Get total metric
             (callback) => {
                 controller.getMetricsByFilter(null,
@@ -101,10 +122,10 @@ suite('MetricsControllerTest', () => {
                         assert.equal(1, set.values.length); 
 
                         let value = set.values[0];
-                        assert.equal(444, value.sum);
-                        assert.equal(123, value.min);
+                        assert.equal(445, value.sum);
+                        assert.equal(1, value.min);
                         assert.equal(321, value.max);
-                        assert.equal(2, value.count);
+                        assert.equal(3, value.count);
 
                         callback(err);
                     }
@@ -156,6 +177,202 @@ suite('MetricsControllerTest', () => {
                         assert.equal(321, value.sum);
                         assert.equal(321, value.min);
                         assert.equal(321, value.max);
+                        assert.equal(1, value.count);
+
+                        callback(err);
+                    }
+                );
+            },
+            // Get hour metric
+            (callback) => {
+                let set: MetricValueSetV1;
+                controller.getMetricsByFilter(
+                    null,
+                    FilterParams.fromTuples(
+                        "name", "metric1",
+                        "time_horizon", "hour",
+                        "from_year", 2018,
+                        "from_month", 8,
+                        "from_day", 26,
+                        "from_hour", 0,
+                        "to_year", 2018,
+                        "to_month", 11,
+                        "to_day", 26,
+                        "to_hour", 23
+                    ),
+                    new PagingParams(),
+                    (err, page) => {
+                        assert.equal(1, page.data.length);
+                        set = page.data[0];
+                        assert.equal("metric1", set.name);
+                        assert.equal(TimeHorizonV1.Hour, set.time_horizon);
+                        assert.equal("A", set.dimension1);
+                        assert.equal("B", set.dimension2);
+                        assert.isNull(set.dimension3);
+
+                        assert.equal(3, set.values.length);
+                        let value = set.values[0];
+                        assert.equal(2018, value.year);
+                        assert.equal(8, value.month);
+                        assert.equal(26, value.day);
+                        assert.equal(12, value.hour);
+                        assert.equal(123, value.sum);
+                        assert.equal(123, value.min);
+                        assert.equal(123, value.max);
+                        assert.equal(1, value.count);
+
+                        value = set.values[1];
+                        assert.equal(2018, value.year);
+                        assert.equal(8, value.month);
+                        assert.equal(26, value.day);
+                        assert.equal(13, value.hour);
+                        assert.equal(321, value.sum);
+                        assert.equal(321, value.min);
+                        assert.equal(321, value.max);
+                        assert.equal(1, value.count);
+
+                        value = set.values[2];
+                        assert.equal(2018, value.year);
+                        assert.equal(11, value.month);
+                        assert.equal(26, value.day);
+                        assert.equal(13, value.hour);
+                        assert.equal(1, value.sum);
+                        assert.equal(1, value.min);
+                        assert.equal(1, value.max);
+                        assert.equal(1, value.count);
+
+                        callback(err);
+                    }
+                );
+            },
+             // Get day metric
+             (callback) => {
+                let set: MetricValueSetV1;
+                controller.getMetricsByFilter(
+                    null,
+                    FilterParams.fromTuples(
+                        "name", "metric1",
+                        "time_horizon", "day",
+                        "from_year", 2018,
+                        "from_month", 8,
+                        "from_day", 26,
+                        "from_hour", 0,
+                        "to_year", 2018,
+                        "to_month", 11,
+                        "to_day", 26,
+                        "to_hour", 23
+                    ),
+                    new PagingParams(),
+                    (err, page) => {
+                        assert.equal(1, page.data.length);
+                        set = page.data[0];
+                        assert.equal("metric1", set.name);
+                        assert.equal(TimeHorizonV1.Day, set.time_horizon);
+                        assert.equal("A", set.dimension1);
+                        assert.equal("B", set.dimension2);
+                        assert.isNull(set.dimension3);
+
+                        assert.equal(2, set.values.length);
+                        let value = set.values[0];
+                        assert.equal(2018, value.year);
+                        assert.equal(8, value.month);
+                        assert.equal(26, value.day);
+                        //assert.equal(12, value.hour);
+                        assert.equal(444, value.sum);
+                        assert.equal(123, value.min);
+                        assert.equal(321, value.max);
+                        assert.equal(2, value.count);
+
+                        value = set.values[1];
+                        assert.equal(2018, value.year);
+                        assert.equal(11, value.month);
+                        assert.equal(26, value.day);
+                        //assert.equal(13, value.hour);
+                        assert.equal(1, value.sum);
+                        assert.equal(1, value.min);
+                        assert.equal(1, value.max);
+                        assert.equal(1, value.count);
+
+                        callback(err);
+                    }
+                );
+            }, 
+            // Get day metric for one month
+            (callback) => {
+                let set: MetricValueSetV1;
+                controller.getMetricsByFilter(
+                    null,
+                    FilterParams.fromTuples(
+                        "name", "metric1",
+                        "time_horizon", "day",
+                        "from_year", 2018,
+                        "from_month", 8,
+                        "from_day", 1,
+                        "from_hour", 0,
+                        "to_year", 2018,
+                        "to_month", 8,
+                        "to_day", 31,
+                        "to_hour", 23
+                    ),
+                    new PagingParams(),
+                    (err, page) => {
+                        assert.equal(1, page.data.length);
+                        set = page.data[0];
+                        assert.equal("metric1", set.name);
+                        assert.equal(TimeHorizonV1.Day, set.time_horizon);
+                        assert.equal("A", set.dimension1);
+                        assert.equal("B", set.dimension2);
+                        assert.isNull(set.dimension3);
+
+                        assert.equal(1, set.values.length);
+                        let value = set.values[0];
+                        assert.equal(2018, value.year);
+                        assert.equal(8, value.month);
+                        assert.equal(26, value.day);
+                        assert.equal(444, value.sum);
+                        assert.equal(123, value.min);
+                        assert.equal(321, value.max);
+                        assert.equal(2, value.count);
+
+                        callback(err);
+                    }
+                );
+            },
+            // Get day metric for one month
+            (callback) => {
+                let set: MetricValueSetV1;
+                controller.getMetricsByFilter(
+                    null,
+                    FilterParams.fromTuples(
+                        "name", "metric1",
+                        "time_horizon", "day",
+                        "from_year", 2018,
+                        "from_month", 11,
+                        "from_day", 1,
+                        "from_hour", 0,
+                        "to_year", 2018,
+                        "to_month", 11,
+                        "to_day", 30,
+                        "to_hour", 23
+                    ),
+                    new PagingParams(),
+                    (err, page) => {
+                        assert.equal(1, page.data.length);
+                        set = page.data[0];
+                        assert.equal("metric1", set.name);
+                        assert.equal(TimeHorizonV1.Day, set.time_horizon);
+                        assert.equal("A", set.dimension1);
+                        assert.equal("B", set.dimension2);
+                        assert.isNull(set.dimension3);
+
+                        assert.equal(1, set.values.length);
+                        let value = set.values[0];
+                        assert.equal(2018, value.year);
+                        assert.equal(11, value.month);
+                        assert.equal(26, value.day);
+                        assert.equal(1, value.sum);
+                        assert.equal(1, value.min);
+                        assert.equal(1, value.max);
                         assert.equal(1, value.count);
 
                         callback(err);
