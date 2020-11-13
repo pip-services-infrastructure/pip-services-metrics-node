@@ -33,11 +33,11 @@ export class TimeIndexComposer {
     public static composeFromIndexFromFilter(timeHorizon: number, filter: FilterParams): string {
         // Define from time
         let time = filter.getAsDateTime("from_time");
-        let year = filter.getAsIntegerWithDefault("from_year", time.getFullYear());
-        let month = filter.getAsIntegerWithDefault("from_month", time.getMonth());
-        let day = filter.getAsIntegerWithDefault("from_day", time.getDay());
-        let hour = filter.getAsIntegerWithDefault("from_hour", time.getHours());
-        let minute = filter.getAsIntegerWithDefault("from_minute", time.getMinutes());
+        let year = filter.getAsIntegerWithDefault("from_year", time.getUTCFullYear());
+        let month = filter.getAsIntegerWithDefault("from_month", time.getUTCMonth() + 1);
+        let day = filter.getAsIntegerWithDefault("from_day", time.getUTCDate());
+        let hour = filter.getAsIntegerWithDefault("from_hour", time.getUTCHours());
+        let minute = filter.getAsIntegerWithDefault("from_minute", time.getUTCMinutes());
 
         return this.composeIndex(timeHorizon, year, month, day, hour, minute);
     }
@@ -45,11 +45,11 @@ export class TimeIndexComposer {
     public static composeToIndexFromFilter(timeHorizon: number, filter: FilterParams): string {
         // Define to time
         let time = filter.getAsDateTime("to_time");
-        let year = filter.getAsIntegerWithDefault("to_year", time.getFullYear());
-        let month = filter.getAsIntegerWithDefault("to_month", time.getMonth());
-        let day = filter.getAsIntegerWithDefault("to_day", time.getDay());
-        let hour = filter.getAsIntegerWithDefault("to_hour", time.getHours());
-        let minute = filter.getAsIntegerWithDefault("to_minute", time.getMinutes());
+        let year = filter.getAsIntegerWithDefault("to_year", time.getUTCFullYear());
+        let month = filter.getAsIntegerWithDefault("to_month", time.getUTCMonth() + 1);
+        let day = filter.getAsIntegerWithDefault("to_day", time.getUTCDate());
+        let hour = filter.getAsIntegerWithDefault("to_hour", time.getUTCHours());
+        let minute = filter.getAsIntegerWithDefault("to_minute", time.getUTCMinutes());
 
         return this.composeIndex(timeHorizon, year, month, day, hour, minute);
     }

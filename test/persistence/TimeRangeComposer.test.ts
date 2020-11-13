@@ -65,6 +65,14 @@ suite('TimeRangeComposerTest', () => {
         );
         range = TimeRangeComposer.composeFromRangeFromFilter(TimeHorizonV1.Minute, filter);
         assert.equal(201808, range);
+
+        filter = FilterParams.fromTuples(
+            "name", "test",
+            "time_horizon", "hour",
+            "from_time", "2018-08-26T14:33:00Z"
+        );
+        range = TimeRangeComposer.composeFromRangeFromFilter(TimeHorizonV1.Minute, filter);
+        assert.equal(201808, range);
     });
 
     test('TestComposeToRangeFromFilter', () => {
@@ -83,6 +91,14 @@ suite('TimeRangeComposerTest', () => {
             "to_day", 26,
             "to_hour", 14,
             "to_minute", 33
+        );
+        range = TimeRangeComposer.composeToRangeFromFilter(TimeHorizonV1.Minute, filter);
+        assert.equal(201808, range);
+
+        filter = FilterParams.fromTuples(
+            "name", "test",
+            "time_horizon", "hour",
+            "to_time", "2018-08-26T14:33:00Z"
         );
         range = TimeRangeComposer.composeToRangeFromFilter(TimeHorizonV1.Minute, filter);
         assert.equal(201808, range);

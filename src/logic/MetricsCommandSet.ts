@@ -13,9 +13,6 @@ import { Parameters } from 'pip-services3-commons-node';
 import { IMetricsController } from './IMetricsController';
 import { MetricUpdateV1Schema } from '../data/version1/MetricUpdateV1Schema';
 import { TimeHorizonV1 } from '../data/version1/TimeHorizonV1';
-import { MetricDefinitionV1,} from '../data/version1/MetricDefinitionV1';
-import { MetricValueSetV1 } from '../data/version1/MetricValueSetV1';
-import { MetricUpdateV1 } from '../data/version1/MetricUpdateV1';
 
 export class MetricsCommandSet extends CommandSet {
     private _controller: IMetricsController;
